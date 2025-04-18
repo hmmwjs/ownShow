@@ -1,5 +1,83 @@
+// 从配置文件加载网站信息
+async function loadSiteConfig() {
+    try {
+        // 添加加载中的样式
+        const loadingElements = [
+            document.querySelector('header h1'),
+            document.querySelector('.hero h2'),
+            document.querySelector('.hero p'),
+            document.querySelector('footer p')
+        ];
+        loadingElements.forEach(el => {
+            if (el) el.classList.add('loading');
+        });
+        
+        // 使用相对路径加载配置文件
+        const response = await fetch('./config.json');
+        if (!response.ok) {
+            throw new Error('无法加载配置文件');
+        }
+        const config = await response.json();
+        
+        // 更新网站标题
+        document.title = config.siteTitle;
+        
+        // 更新头部标题
+        const headerTitle = document.querySelector('header h1');
+        if (headerTitle) {
+            headerTitle.textContent = config.headerTitle;
+            headerTitle.classList.remove('loading');
+        }
+        
+        // 更新hero区域
+        const heroTitle = document.querySelector('.hero h2');
+        const heroDesc = document.querySelector('.hero p');
+        if (heroTitle) {
+            heroTitle.textContent = config.heroTitle;
+            heroTitle.classList.remove('loading');
+        }
+        if (heroDesc) {
+            heroDesc.textContent = config.heroDescription;
+            heroDesc.classList.remove('loading');
+        }
+        
+        // 更新页脚信息
+        const footerText = document.querySelector('footer p');
+        if (footerText) {
+            footerText.textContent = config.footerText;
+            footerText.classList.remove('loading');
+        }
+        
+        // 更新社交链接
+        const socialLinks = document.querySelectorAll('.social a');
+        if (socialLinks.length > 0 && config.socialLinks) {
+            const socialPlatforms = ['github', 'linkedin', 'twitter'];
+            socialLinks.forEach((link, index) => {
+                if (index < socialPlatforms.length) {
+                    const platform = socialPlatforms[index];
+                    if (config.socialLinks[platform]) {
+                        link.href = config.socialLinks[platform];
+                    }
+                }
+            });
+        }
+    } catch (error) {
+        console.error('加载配置文件时出错:', error);
+        
+        // 移除loading类，显示错误信息
+        const loadingElements = document.querySelectorAll('.loading');
+        loadingElements.forEach(el => {
+            el.classList.remove('loading');
+            el.textContent = '配置加载失败';
+        });
+    }
+}
+
 // 等待DOM加载完成
 document.addEventListener('DOMContentLoaded', function() {
+    // 加载配置信息
+    loadSiteConfig();
+    
     // 平滑滚动
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
