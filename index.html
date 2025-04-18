@@ -1,11 +1,86 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <title>我的个人网页</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的研究领域 - 自动驾驶与行为经济学</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-  <h1>你好，我是Humm！</h1>
-  <p>欢迎来到我的个人主页。</p>
+    <header>
+        <div class="container">
+            <h1>我的研究空间</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html" class="active">首页</a></li>
+                    <li><a href="pages/autonomous-driving.html">自动驾驶</a></li>
+                    <li><a href="pages/behavioral-economics.html">行为经济学</a></li>
+                    <li><a href="pages/about.html">关于我</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h2>探索未来与人类行为的交叉领域</h2>
+                <p>欢迎来到我的研究空间，这里汇集了我在自动驾驶技术和行为经济学领域的思考与研究。</p>
+            </div>
+        </section>
+
+        <section class="featured">
+            <div class="container">
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-car-side"></i>
+                    </div>
+                    <h3>自动驾驶</h3>
+                    <p>探索自动驾驶技术的最新发展、算法、感知系统和未来方向。</p>
+                    <a href="pages/autonomous-driving.html" class="btn">了解更多</a>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3>行为经济学</h3>
+                    <p>研究人类决策背后的心理因素，以及这些因素如何影响经济行为和市场动态。</p>
+                    <a href="pages/behavioral-economics.html" class="btn">了解更多</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="latest">
+            <div class="container">
+                <h2>最新研究</h2>
+                <div class="article-preview">
+                    <h3>自动驾驶与人类行为的交互</h3>
+                    <p>探讨自动驾驶系统如何理解并适应人类驾驶行为模式...</p>
+                    <a href="pages/autonomous-driving.html#interaction" class="read-more">继续阅读</a>
+                </div>
+                
+                <div class="article-preview">
+                    <h3>决策偏差对投资行为的影响</h3>
+                    <p>分析确认偏差、损失厌恶等心理因素如何影响投资决策...</p>
+                    <a href="pages/behavioral-economics.html#biases" class="read-more">继续阅读</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2023 我的研究空间. 保留所有权利。</p>
+            <div class="social">
+                <a href="#"><i class="fab fa-github"></i></a>
+                <a href="#"><i class="fab fa-linkedin"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
 </body>
-</html>
+</html> 
