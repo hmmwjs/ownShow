@@ -12,15 +12,36 @@ async function loadSiteConfig() {
             if (el) el.classList.add('loading');
         });
         
-        // 使用相对路径加载配置文件
-        const response = await fetch('./config.json');
+        // 判断是否在子页面
+        const isSubPage = window.location.pathname.includes('/pages/') || window.location.pathname.includes('/Projects/');
+        
+        // 根据页面位置调整配置文件路径
+        const configPath = isSubPage ? '../config.json' : './config.json';
+        
+        // 加载配置文件
+        const response = await fetch(configPath);
         if (!response.ok) {
             throw new Error('无法加载配置文件');
         }
         const config = await response.json();
         
+        // 获取当前页面名称用于标题
+        let pageName = '';
+        if (window.location.pathname.includes('/pages/') || window.location.pathname.includes('/Projects/')) {
+            const path = window.location.pathname;
+            const filename = path.split('/').pop();
+            pageName = filename.replace('.html', '').split('-').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+            
+            // 为Projects目录下的文件处理特殊情况
+            if (path.includes('/Projects/')) {
+                pageName = document.title.split('|')[0].trim();
+            }
+        }
+        
         // 更新网站标题
-        document.title = config.siteTitle;
+        document.title = pageName ? `${pageName} - ${config.siteTitle}` : config.siteTitle;
         
         // 更新头部标题
         const headerTitle = document.querySelector('header h1');
@@ -32,11 +53,11 @@ async function loadSiteConfig() {
         // 更新hero区域
         const heroTitle = document.querySelector('.hero h2');
         const heroDesc = document.querySelector('.hero p');
-        if (heroTitle) {
+        if (heroTitle && !isSubPage) {
             heroTitle.textContent = config.heroTitle;
             heroTitle.classList.remove('loading');
         }
-        if (heroDesc) {
+        if (heroDesc && !isSubPage) {
             heroDesc.textContent = config.heroDescription;
             heroDesc.classList.remove('loading');
         }
