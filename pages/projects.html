@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作品集 | 我的空间</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .project-card {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            text-align: center;
+            position: relative;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .project-icon {
+            height: 180px;
+            background-color: var(--light-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: var(--primary-color);
+        }
+        
+        .project-info {
+            padding: 20px;
+        }
+        
+        .project-info h3 {
+            margin: 15px 0;
+            font-size: 1.4rem;
+        }
+        
+        .project-link {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+        }
+        
+        .no-projects {
+            text-align: center;
+            padding: 50px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: var(--box-shadow);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>我的空间</h1>
+            <nav>
+                <ul>
+                    <li><a href="../index.html">首页</a></li>
+                    <li><a href="autonomous-driving.html">自动驾驶</a></li>
+                    <li><a href="behavioral-economics.html">行为经济学</a></li>
+                    <li><a href="middleschool.html">中小学数学</a></li>
+                    <li><a href="projects.html" class="active">作品集</a></li>
+                    <li><a href="about.html">关于我</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h2>我的作品集</h2>
+                <p>探索我创建的各种项目和游戏</p>
+            </div>
+        </section>
+
+        <section class="page-content">
+            <div class="container">
+                <div class="section">
+                    <h2>项目列表</h2>
+                    <p>以下是我最近创建的一些项目，点击卡片可以查看详情和体验。</p>
+                    
+                    <div id="projects-container" class="projects-grid">
+                        <!-- 项目列表将通过JavaScript动态加载 -->
+                        <div class="no-projects">
+                            <i class="fas fa-spinner fa-pulse" style="font-size: 2rem; margin-bottom: 20px;"></i>
+                            <p>正在加载项目...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 我的研究空间. 保留所有权利。</p>
+            <div class="social">
+                <a href="#"><i class="fab fa-github"></i></a>
+                <a href="#"><i class="fab fa-linkedin"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/main.js"></script>
+    <script src="../js/list-projects.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const projectsContainer = document.getElementById('projects-container');
+            
+            try {
+                // 获取Projects目录中的HTML文件列表
+                const projects = await fetchProjects();
+                
+                // 清空容器
+                projectsContainer.innerHTML = '';
+                
+                if (projects.length === 0) {
+                    projectsContainer.innerHTML = `
+                        <div class="no-projects">
+                            <i class="fas fa-folder-open" style="font-size: 2rem; margin-bottom: 20px;"></i>
+                            <p>暂无项目</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // 为每个项目创建卡片
+                projects.forEach(project => {
+                    let icon = 'fas fa-code';
+                    
+                    // 根据项目名称决定图标
+                    if (project.name.toLowerCase().includes('snake')) {
+                        icon = 'fas fa-dragon';  // 用龙图标代替蛇
+                    } else if (project.name.toLowerCase().includes('tetris')) {
+                        icon = 'fas fa-th-large';  // 用方块图标代替俄罗斯方块
+                    } else if (project.name.toLowerCase().includes('game')) {
+                        icon = 'fas fa-gamepad';
+                    }
+                    
+                    const card = document.createElement('div');
+                    card.className = 'project-card';
+                    card.innerHTML = `
+                        <div class="project-icon">
+                            <i class="${icon}"></i>
+                        </div>
+                        <div class="project-info">
+                            <h3>${project.title}</h3>
+                        </div>
+                        <a href="../Projects/${project.file}" class="project-link" aria-label="${project.title}"></a>
+                    `;
+                    
+                    projectsContainer.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                projectsContainer.innerHTML = `
+                    <div class="no-projects">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 20px;"></i>
+                        <p>加载项目时出错</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
