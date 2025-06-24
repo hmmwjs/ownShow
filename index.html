@@ -3,21 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>加载中...</title>
+    <title>内嵌浏览器演示</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .content-container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .section-content {
+            margin-bottom: 30px;
+        }
+        
+        .browser-section {
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+
+        .alert {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .tips {
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .tips h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        
+        .tips ul {
+            margin-bottom: 0;
+        }
+        
+        .tips code {
+            background-color: #f1f1f1;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
 </head>
 <body>
     <header>
         <div class="container">
-            <h1>加载中...</h1>
+            <h1>内嵌浏览器演示</h1>
             <nav>
                 <ul>
                     <li><a href="index.html" class="active">首页</a></li>
-                    <li><a href="pages/autonomous-driving.html">自动驾驶</a></li>
-                    <li><a href="pages/behavioral-economics.html">行为经济学</a></li>
-                    <li><a href="pages/middleschool.html">中小学数学</a></li>
-                    <li><a href="pages/about.html">关于我</a></li>
+                    <li><a href="browser.html">独立浏览器页面</a></li>
                 </ul>
             </nav>
         </div>
@@ -26,61 +77,84 @@
     <main>
         <section class="hero">
             <div class="container">
-                <h2>加载中...</h2>
-                <p>加载中...</p>
+                <h2>在网页内嵌入浏览器</h2>
+                <p>这个演示展示了如何在网页中嵌入一个功能完善的浏览器界面，无需离开当前页面即可浏览其他网站。</p>
+            </div>
+        </section>
+
+        <section class="browser-section">
+            <div class="content-container">
+                <h2 class="section-title">内嵌浏览器</h2>
+                <div class="section-content">
+                    <div class="alert">
+                        <strong>重要提示：</strong> 此项目是纯静态网页实现，使用公共CORS代理服务访问其他网站。由于浏览器安全限制，某些网站可能无法正常显示或功能受限。
+                    </div>
+                    <p>下面是嵌入的浏览器界面，你可以输入网址访问其他网站，使用前进、后退、刷新等功能。</p>
+                </div>
+
+                <div class="tips">
+                    <h3>使用提示</h3>
+                    <ul>
+                        <li>此浏览器使用公共CORS代理服务访问网站，某些网站可能无法正常显示</li>
+                        <li>如果网站无法加载，输入 <code>switch:proxy</code> 并点击访问按钮切换到另一个代理</li>
+                        <li>推荐访问的网站：bing.com, example.com, wikipedia.org</li>
+                        <li>部分网站的交互功能可能受限，这是由于浏览器安全限制</li>
+                    </ul>
+                </div>
+                
+                <!-- 嵌入浏览器组件 -->
+                <div class="browser-container">
+                    <div class="browser-controls">
+                        <div class="navigation-buttons">
+                            <button id="back-button" title="后退"><i class="fas fa-arrow-left"></i></button>
+                            <button id="forward-button" title="前进"><i class="fas fa-arrow-right"></i></button>
+                            <button id="refresh-button" title="刷新"><i class="fas fa-sync-alt"></i></button>
+                            <button id="home-button" title="主页"><i class="fas fa-home"></i></button>
+                        </div>
+                        <div class="url-bar">
+                            <input type="text" id="url-input" class="url-input" placeholder="输入网址..." />
+                            <button id="go-button" class="go-button"><i class="fas fa-arrow-right"></i> 访问</button>
+                        </div>
+                    </div>
+                    
+                    <div id="loading" class="loading">
+                        <p>正在加载，请稍候...</p>
+                    </div>
+                    
+                    <iframe id="browser-iframe" class="browser-content" src="about:blank" sandbox="allow-same-origin allow-scripts allow-popups allow-forms"></iframe>
+                    
+                    <div class="status-bar">
+                        <span id="status-text">准备就绪</span>
+                    </div>
+                </div>
             </div>
         </section>
 
         <section class="featured">
             <div class="container">
+                <h2 class="section-title">关于此项目</h2>
                 <div class="card">
                     <div class="card-icon">
-                        <i class="fas fa-car-side"></i>
+                        <i class="fas fa-code"></i>
                     </div>
-                    <h3>自动驾驶</h3>
-                    <p>探索自动驾驶技术的最新发展、算法、感知系统和未来方向。</p>
-                    <a href="pages/autonomous-driving.html" class="btn">了解更多</a>
-                </div>
-                
-                <div class="card">
-                    <div class="card-icon">
-                        <i class="fas fa-brain"></i>
-                    </div>
-                    <h3>行为经济学</h3>
-                    <p>研究人类决策背后的心理因素，以及这些因素如何影响经济行为和市场动态。</p>
-                    <a href="pages/behavioral-economics.html" class="btn">了解更多</a>
+                    <h3>技术原理</h3>
+                    <p>本项目使用HTML的iframe元素来嵌入其他网页，JavaScript来实现浏览器控制功能，以及公共CORS代理服务来尝试解决跨域问题。</p>
                 </div>
                 
                 <div class="card">
                     <div class="card-icon">
-                        <i class="fas fa-calculator"></i>
+                        <i class="fas fa-globe"></i>
                     </div>
-                    <h3>中小学数学</h3>
-                    <p>系统性地梳理从小学到初中的数学知识体系，包含各年级的知识点和练习题。</p>
-                    <a href="pages/middleschool.html" class="btn">了解更多</a>
-                </div>
-            </div>
-        </section>
-
-        <section class="latest">
-            <div class="container">
-                <h2>最新研究</h2>
-                <div class="article-preview">
-                    <h3>自动驾驶与人类行为的交互</h3>
-                    <p>探讨自动驾驶系统如何理解并适应人类驾驶行为模式...</p>
-                    <a href="pages/autonomous-driving.html#interaction" class="read-more">继续阅读</a>
+                    <h3>跨域问题</h3>
+                    <p>由于浏览器的同源策略(Same-Origin Policy)限制，很多网站设置了X-Frame-Options来防止被嵌入到iframe中，这是一种安全保护机制。</p>
                 </div>
                 
-                <div class="article-preview">
-                    <h3>决策偏差对投资行为的影响</h3>
-                    <p>分析确认偏差、损失厌恶等心理因素如何影响投资决策...</p>
-                    <a href="pages/behavioral-economics.html#biases" class="read-more">继续阅读</a>
-                </div>
-                
-                <div class="article-preview">
-                    <h3>数学知识点依赖关系图</h3>
-                    <p>通过知识图谱展示数学概念之间的内在联系，帮助学生建立完整的知识体系...</p>
-                    <a href="middleschool/知识点依赖关系图.html" class="read-more">继续阅读</a>
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>纯静态实现</h3>
+                    <p>本项目是纯前端实现，无需服务器支持，可直接部署在GitHub Pages等静态网页托管服务上。这也意味着功能会有一定限制。</p>
                 </div>
             </div>
         </section>
@@ -88,7 +162,7 @@
 
     <footer>
         <div class="container">
-            <p>加载中...</p>
+            <p>内嵌浏览器演示项目 &copy; 2023</p>
             <div class="social">
                 <a href="#"><i class="fab fa-github"></i></a>
                 <a href="#"><i class="fab fa-linkedin"></i></a>
@@ -97,6 +171,6 @@
         </div>
     </footer>
 
-    <script src="js/main.js"></script>
+    <script src="js/browser.js"></script>
 </body>
 </html> 
