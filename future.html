@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人成长力自评工具</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        :root {
+            --primary-color: #4a90e2;
+            --background-color: #f4f7f9;
+            --card-background: #ffffff;
+            --text-color: #333;
+            --heading-color: #1a202c;
+            --border-color: #e2e8f0;
+            --shadow-color: rgba(0, 0, 0, 0.05);
+            --success-color: #48bb78;
+            --warning-color: #f59e0b;
+            --danger-color: #f56565;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 1rem;
+        }
+
+        .header h1 {
+            color: var(--heading-color);
+            font-size: 2.5rem;
+            margin: 0;
+        }
+        
+        .header p {
+            color: #718096;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            align-items: flex-start;
+        }
+
+        .card {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .assessment-table h3 {
+            color: var(--heading-color);
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .dimension-item {
+            display: grid;
+            grid-template-columns: 1fr 100px 50px;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .dimension-label {
+            font-weight: 500;
+        }
+        
+        .tooltip-trigger {
+            cursor: pointer;
+            color: var(--primary-color);
+            font-weight: bold;
+            text-decoration: none;
+            margin-left: 5px;
+        }
+        
+        .score-slider {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 5px;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+        }
+        .score-slider:hover {
+            opacity: 1;
+        }
+        .score-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--primary-color);
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        .score-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--primary-color);
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        .score-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-align: center;
+        }
+        
+        .chart-container {
+            position: relative;
+        }
+        
+        #total-score {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        #total-score span {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .results-card h2 {
+            margin-bottom: 1.5rem;
+        }
+
+        .evaluation-section, .suggestions-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .evaluation-section h3, .suggestions-section h3 {
+            color: var(--heading-color);
+            font-size: 1.3rem;
+        }
+        
+        #evaluation-text {
+            font-size: 1.1rem;
+            padding: 1rem;
+            background-color: rgba(74, 144, 226, 0.1);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 4px;
+        }
+
+        #suggestions-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #suggestions-list li {
+            background-color: var(--background-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.8rem;
+            border-left: 4px solid var(--warning-color);
+        }
+        
+        #suggestions-list strong {
+            color: var(--heading-color);
+        }
+
+        /* Modal for Tooltip */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: auto;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        .modal-header h2 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+        .close-button {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: var(--text-color);
+        }
+        .modal-body p {
+            margin: 0.5rem 0;
+        }
+        .modal-body strong {
+            color: var(--heading-color);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="header">
+            <h1>个人成长力自评工具</h1>
+            <p>基于多维度特征分析，科学评估您的成长潜力与速度</p>
+        </header>
+
+        <main class="main-content">
+            <div class="card assessment-table">
+                <h2>自评量表</h2>
+                <div id="assessment-form"></div>
+            </div>
+
+            <div class="card chart-and-score">
+                <h2>可视化分析</h2>
+                <div class="chart-container">
+                    <canvas id="radarChart"></canvas>
+                </div>
+                <div id="total-score">总分: <span>80</span> / 80</div>
+            </div>
+        </main>
+        
+        <div class="card results-card">
+            <div class="evaluation-section">
+                <h3>综合评价</h3>
+                <p id="evaluation-text"></p>
+            </div>
+            <div class="suggestions-section">
+                <h3>提升建议</h3>
+                <ul id="suggestions-list"></ul>
+            </div>
+        </div>
+    </div>
+    
+    <div id="tooltipModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title"></h2>
+                <span class="close-button">&times;</span>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+
+    <script>
+        const assessmentData = [
+            {
+                category: "内在认知特征",
+                features: [
+                    { name: "成长型心态", definition: "相信能力可以通过努力提升，而非天生固定。", positive: "视失败为学习机会，追求挑战；如“失败让我更聪明”。", negative: "视能力为固定，回避风险；如“这是我的极限”。", impact: "独立于实际技能，决定是否主动寻求成长；有此心态者成长更快，因为视努力为投资。", suggestion: "阅读卡罗尔·德韦克的《终身成长》。练习将挑战视为机遇，从失败中总结“我学到了什么？”而不是“我失败了”。" },
+                    { name: "自我效能感", definition: "对自己完成任务能力的自信信念。", positive: "坚信“我能掌控结果”，面对不确定性时乐观。", negative: "低自信，常说“我不行”，易放弃。", impact: "与心态独立，聚焦于执行信心；高者成长加速，因为减少自我怀疑导致的拖延。", suggestion: "从小处着手，设定并完成一些小目标来积累成功经验。将大任务分解成可管理的小步骤，每完成一步都给自己积极肯定。" },
+                    { name: "反思深度", definition: "定期审视经验、提取教训的能力。", positive: "常问“为什么失败？下次如何改进？”并记录。", negative: "忽略过去经验，重复错误。", impact: "独立于学习行为，强调内省质量；促进加速迭代，避免盲目行动。", suggestion: "培养写日志或周报的习惯。定期（如每周）回顾过去几天的经历，思考哪些做得好，哪些可以改进，并写下具体的行动计划。" }
+                ]
+            },
+            {
+                category: "行为执行特征",
+                features: [
+                    { name: "学习主动性", definition: "主动获取新知识和技能的驱动力。", positive: "每天阅读/课程，探索未知领域；如自学编程。", negative: "被动等待机会，只在被迫时学习。", impact: "独立于心态，聚焦行动频率；高者成长更快，因为知识积累呈指数级。", suggestion: "设定每周的学习目标，例如“本周学习一个新软件功能”或“阅读三篇行业文章”。利用碎片时间通过播客、在线课程等方式主动输入新知识。" },
+                    { name: "坚持耐力", definition: "在逆境中持续努力的韧性（grit）。", positive: "长期坚持目标，如马拉松式项目；不轻易切换。", negative: "易受挫放弃，短期冲动。", impact: "与学习独立，强调耐力而非内容；决定成长持续性，避免半途而废。", suggestion: "选择一个长期目标，并公开承诺（如告诉朋友）。将它分解为长期、中期和短期计划，并专注于完成当下的任务，庆祝每一个小小的里程碑。" },
+                    { name: "适应灵活性", definition: "快速调整策略应对变化的能力。", positive: "环境变时 pivot（如职场转行），实验新方法。", negative: "固守旧习惯，抵抗变革。", impact: "独立于坚持，聚焦变通而非顽固；在动态世界中加速成长，减少停滞期。", suggestion: "主动走出舒适区，尝试用新的方法解决旧问题。当遇到意外情况时，先冷静分析，思考至少三种应对方案，并选择其一快速试错。" }
+                ]
+            },
+            {
+                category: "外部环境特征",
+                features: [
+                    { name: "支持网络", definition: "周围人际关系提供的指导和资源。", positive: "有导师/圈子，提供反馈和机会；如加入专业社区。", negative: "孤立或负面影响圈子，缺乏指导。", impact: "独立于个人努力，提供外部杠杆；高者成长更快，通过借力放大自身。", suggestion: "主动寻找一位你尊敬的导师或前辈，并定期向他们请教。积极参加线上或线下的行业社群，与优秀的人建立连接，分享和学习。" },
+                    { name: "资源利用率", definition: "有效获取和运用外部工具/机会的能力。", positive: "善用书籍/在线资源/资金，高效分配。", negative: "资源匮乏或浪费，如忽略免费课程。", impact: "与网络独立，聚焦工具而非人；确保成长不因外部限制而放缓，覆盖物质层面。", suggestion: "整理一份你所在领域的优质资源清单（如网站、书籍、工具）。在开始新任务前，先花点时间思考“有哪些资源可以帮助我更高效地完成这件事？”。" }
+                ]
+            }
+        ];
+
+        const formContainer = document.getElementById('assessment-form');
+        const radarChartCtx = document.getElementById('radarChart').getContext('2d');
+        const totalScoreEl = document.querySelector('#total-score span');
+        const evaluationTextEl = document.getElementById('evaluation-text');
+        const suggestionsListEl = document.getElementById('suggestions-list');
+
+        let chart;
+        const labels = [];
+        const scores = [];
+
+        function initializeForm() {
+            assessmentData.forEach(category => {
+                const categoryTitle = document.createElement('h3');
+                categoryTitle.textContent = category.category;
+                formContainer.appendChild(categoryTitle);
+
+                category.features.forEach(feature => {
+                    labels.push(feature.name);
+                    scores.push(10); // Default score
+
+                    const item = document.createElement('div');
+                    item.className = 'dimension-item';
+                    
+                    const label = document.createElement('div');
+                    label.className = 'dimension-label';
+                    label.innerHTML = `${feature.name} <a href="#" class="tooltip-trigger" data-name="${feature.name}">[?]</a>`;
+                    
+                    const slider = document.createElement('input');
+                    slider.type = 'range';
+                    slider.min = 1;
+                    slider.max = 10;
+                    slider.value = 10;
+                    slider.className = 'score-slider';
+                    slider.dataset.name = feature.name;
+                    
+                    const valueDisplay = document.createElement('div');
+                    valueDisplay.className = 'score-value';
+                    valueDisplay.textContent = '10';
+                    
+                    item.appendChild(label);
+                    item.appendChild(slider);
+                    item.appendChild(valueDisplay);
+                    formContainer.appendChild(item);
+
+                    slider.addEventListener('input', (event) => {
+                        const score = event.target.value;
+                        valueDisplay.textContent = score;
+                        updateAssessments();
+                    });
+                });
+            });
+            initializeChart();
+            updateAssessments();
+            initializeModal();
+        }
+
+        function initializeChart() {
+            chart = new Chart(radarChartCtx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '个人成长力得分',
+                        data: scores,
+                        backgroundColor: 'rgba(74, 144, 226, 0.2)',
+                        borderColor: 'rgba(74, 144, 226, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(74, 144, 226, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(74, 144, 226, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true,
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 10,
+                            ticks: {
+                                stepSize: 2,
+                                backdropColor: 'transparent'
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 14,
+                                    family: "'Noto Sans SC', sans-serif"
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateAssessments() {
+            const sliders = document.querySelectorAll('.score-slider');
+            let totalScore = 0;
+            const currentScores = [];
+            
+            sliders.forEach(slider => {
+                const score = parseInt(slider.value);
+                totalScore += score;
+                currentScores.push(score);
+            });
+            
+            // Update Chart
+            chart.data.datasets[0].data = currentScores;
+            chart.update();
+            
+            // Update Total Score
+            totalScoreEl.textContent = totalScore;
+            
+            // Update Evaluation and Suggestions
+            updateResults(currentScores, totalScore);
+        }
+
+        function updateResults(scores, totalScore) {
+            // Evaluation Text
+            let evalText = '';
+            if (totalScore >= 70) {
+                evalText = '非常出色！您已具备极强的成长心态和执行力，正处在高速成长的快车道上。请继续保持，并挑战更高远的目标。';
+            } else if (totalScore >= 50) {
+                evalText = '表现良好！您在多数方面都做得不错，具备持续成长的坚实基础。关注少数短板，您的成长速度将得到显著提升。';
+            } else if (totalScore >= 30) {
+                evalText = '尚有潜力！您在某些方面展现了成长的意愿，但在关键领域仍有提升空间。请关注下面的建议，逐步建立成长习惯。';
+            } else {
+                evalText = '需要警惕！您当前的成长动力和习惯可能面临挑战，容易陷入停滞。但别灰心，从今天起，选择一两个方面开始改变，一切都来得及。';
+            }
+            evaluationTextEl.textContent = evalText;
+
+            // Suggestions
+            suggestionsListEl.innerHTML = '';
+            let suggestionsCount = 0;
+            const allFeatures = assessmentData.flatMap(cat => cat.features);
+
+            scores.forEach((score, index) => {
+                if (score < 6) { // Threshold for suggestion
+                    suggestionsCount++;
+                    const feature = allFeatures[index];
+                    const li = document.createElement('li');
+                    li.innerHTML = `<strong>${feature.name} (得分: ${score}):</strong> ${feature.suggestion}`;
+                    suggestionsListEl.appendChild(li);
+                }
+            });
+
+            if (suggestionsCount === 0) {
+                const li = document.createElement('li');
+                li.style.borderLeftColor = 'var(--success-color)';
+                li.textContent = '太棒了！您在所有维度上都表现均衡且出色，暂无明显的短板。';
+                suggestionsListEl.appendChild(li);
+            }
+        }
+        
+        function initializeModal() {
+            const modal = document.getElementById("tooltipModal");
+            const triggers = document.querySelectorAll(".tooltip-trigger");
+            const closeButton = document.querySelector(".close-button");
+
+            triggers.forEach(trigger => {
+                trigger.onclick = function(e) {
+                    e.preventDefault();
+                    const featureName = this.dataset.name;
+                    const featureData = assessmentData.flatMap(cat => cat.features).find(f => f.name === featureName);
+                    
+                    document.getElementById('modal-title').innerText = featureData.name;
+                    const modalBody = document.getElementById('modal-body');
+                    modalBody.innerHTML = `
+                        <p><strong>定义：</strong>${featureData.definition}</p>
+                        <p><strong>积极指标：</strong>${featureData.positive}</p>
+                        <p><strong>负面指标：</strong>${featureData.negative}</p>
+                        <p><strong>对成长的影响：</strong>${featureData.impact}</p>
+                    `;
+                    modal.style.display = "flex";
+                }
+            });
+
+            closeButton.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeForm);
+    </script>
+
+</body>
+</html>
