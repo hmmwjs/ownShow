@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>个人成长潜力自评系统</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #4a6fa5;
+      --secondary: #166b8a;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --success: #28a745;
+      --warning: #ffc107;
+      --danger: #dc3545;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f6f9;
+      color: var(--dark);
+      line-height: 1.6;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      text-align: center;
+      padding: 2rem 1rem;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+
+    .section {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+      overflow: hidden;
+    }
+
+    .section-title {
+      background-color: var(--primary);
+      color: white;
+      padding: 1rem;
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+
+    .section-content {
+      padding: 1.5rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+    }
+
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background-color: #f1f3f5;
+      font-weight: 600;
+      color: var(--secondary);
+    }
+
+    .score-input {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .score-input input[type="range"] {
+      flex: 1;
+    }
+
+    .score-value {
+      width: 40px;
+      text-align: center;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    .weight-input {
+      width: 60px;
+      padding: 0.4rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    .radar-container {
+      height: 400px;
+      margin: 2rem 0;
+    }
+
+    .result-panel {
+      padding: 1.5rem;
+      background-color: #e8f5e9;
+      border-left: 5px solid var(--success);
+      border-radius: 8px;
+      margin: 1rem 0;
+    }
+
+    .result-panel h3 {
+      color: var(--success);
+      margin-bottom: 0.5rem;
+    }
+
+    .mobile-warning {
+      text-align: center;
+      padding: 1rem;
+      background-color: #fff3cd;
+      color: #856404;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-warning {
+        display: block;
+      }
+      .radar-container {
+        height: 300px;
+      }
+      th, td {
+        padding: 0.6rem;
+        font-size: 0.9rem;
+      }
+    }
+
+    .btn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 1rem;
+    }
+
+    .btn:hover {
+      background-color: var(--secondary);
+    }
+
+    .suggestion {
+      margin: 0.8rem 0;
+      padding: 0.6rem;
+      background: #f8f9fa;
+      border-left: 3px solid var(--warning);
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>个人成长潜力自评系统</h1>
+    <p>基于内在驱动 · 行为策略 · 系统互动三维模型</p>
+  </header>
+
+  <div class="container">
+
+    <div class="mobile-warning">
+      🔍 建议在横屏或大屏设备上查看雷达图，体验更佳。
+    </div>
+
+    <!-- 雷达图 -->
+    <div class="section">
+      <div class="section-title">成长潜力雷达图</div>
+      <div class="section-content">
+        <div class="radar-container">
+          <canvas id="radarChart"></canvas>
+        </div>
+        <p><strong>总分：</strong><span id="totalScore">60.0</span>/100</p>
+      </div>
+    </div>
+
+    <!-- 结果与建议 -->
+    <div class="section">
+      <div class="section-title">综合评价与建议</div>
+      <div class="section-content">
+        <div class="result-panel">
+          <h3 id="overallLevel">中等潜力</h3>
+          <p id="overallFeedback">你具备基本的成长意识，但在关键维度上仍有提升空间。</p>
+        </div>
+        <div id="suggestions"></div>
+      </div>
+    </div>
+
+    <!-- 内在驱动 -->
+    <div class="section">
+      <div class="section-title">一级维度一：内在驱动（Why）</div>
+      <div class="section-content">
+        <p><strong>说明：</strong>个体内部的心理与认知框架，是成长的底层操作系统和能量来源。</p>
+        <table id="table-intrinsic">
+          <thead>
+            <tr>
+              <th>维度</th>
+              <th>说明</th>
+              <th>打分 (1-5)</th>
+              <th>权重</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1. 成长型心态</strong></td>
+              <td>
+                相信能力、智力和天赋是可以通过努力、学习和坚持来发展的。
+                <br><small>• 视挑战为机遇<br>• 从失败中学习<br>• 相信努力的价值</small>
+              </td>
+              <td class="score-input">
+                <input type="range" min="1" max="5" value="3" step="0.1" class="slider" data-index="0">
+                <span class="score-value">3.0</span>
+              </td>
+              <td><input type="number" class="weight-input" value="1" min="0.1" step="0.1"></td>
+            </tr>
+            <tr>
+              <td><strong>2. 自我认知</strong></td>
+              <td>
+                清晰、准确地理解自身情绪、核心价值观、优势和盲区。
+                <br><small>• 情绪觉察与管理<br>• 价值观澄清<br>• 优势与短板反思</small>
+              </td>
+              <td class="score-input">
+                <input type="range" min="1" max="5" value="3" step="0.1" class="slider" data-index="1">
+                <span class="score-value">3.0</span>
+              </td>
+              <td><input type="number" class="weight-input" value="1" min="0.1" step="0.1"></td>
+            </tr>
+            <tr>
+              <td><strong>3. 内在动机</strong></td>
+              <td>
+                由兴趣、好奇心、成就感或使命感驱动，而非外部压力。
+                <br><small>• 兴趣驱动<br>• 自主性追求<br>• 内部成就感</small>
+              </td>
+              <td class="score-input">
+                <input type="range" min="1" max="5" value="3" step="0.1" class="slider" data-index="2">
+                <span class="score-value">3.0</span>
+              </td>
+              <td><input type="number" class="weight-input" value="1" min="0.1" step="0.1"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 行为策略 -->
+    <div class="section">
+      <div class="section-title">一级维度二：行为策略（How）</div>
+      <div class="section-content">
+        <p><strong>说明：</strong>将内在驱动力转化为具体行动、并持续优化的方法论。</p>
+        <table id="table-behavior">
+          <thead>
+            <tr>
+              <th>维度</th>
+              <th>说明</th>
+              <th>打分 (1-5)</th>
+              <th>权重</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>4. 主动学习</strong></td>
+              <td>
+                主动、持续地获取、整合并应用新知识和技能。
+                <br><small>• 高效信息获取<br>• 刻意练习与迭代<br>• 知识迁移应用</small>
+              </td>
+              <td class="score-input">
+                <input type="range" min="1" max="5" value="3" step="0.1" class="slider" data-index="3">
+                <span class="score-value">3.0</span>
+              </td>
+              <td><input type="number" class="weight-input" value="1" min="0.1" step="0.1"></td>
+            </tr>
+            <tr>
+              <td><strong>5. 坚毅执行</strong></td>
+              <td>
+                对长期目标保持热情和毅力，面对挫折不放弃。
+                <br><small>• 长期目标专注力<br>• 挫折恢复力<br>• 习惯养成能力</small>
+              </td>
+              <td class="score-input">
+                <input type="range" min="1" max="5" value="3" step="0.1" class="slider" data-index="4">
+                <span class="score-value">3.0</span>
+              </td>
+              <td><input type="number" class="weight-input" value="1" min="0.1" step="0.1"></td>
+            </tr>
+            <tr>
+              <td><strong>6. 适应变通</strong></td>
+              <td>
+                在不确定环境中快速调整策略和行为。
+                <br><small>• 快速技能迭代<br>• 策略调整能力<br>• 认知灵活性</small>
+              </td>
+              <td class="score-input">
+                <input type="range" min="1" max="5" value="3" step="0.1" class="slider" data-index="5">
+                <span class="score-value">3.0</span>
+              </td>
+              <td><input type="number" class="weight-input" value="1" min="0.1" step="0.1"></td>
+            </tr>
+            <tr>
+              <td><strong>7. 实践创新</strong></td>
+              <td>
+                将想法转化为实际解决方案并创造新价值。
+                <br><small>• 问题重构能力<br>• 动手解决问题<br>• 价值创造导向</small>
+              </td>
+              <td class="score-input">
+                <input type="range" min="1" max="5" value="3" step="0.1" class="slider" data-index="6">
+                <span class="score-value">3.0</span>
+              </td>
+              <td><input type="number" class="weight-input" value="1" min="0.1" step="0.1"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 系统互动 -->
+    <div class="section">
+      <div class="section-title">一级维度三：系统互动（With What）</div>
+      <div class="section-content">
+        <p><strong>说明：</strong>与外部世界（人、组织、资源）连接、协作和价值交换的能力。</p>
+        <table id="table-system">
+          <thead>
+            <tr>
+              <th>维度</th>
+              <th>说明</th>
+              <th>打分 (1-5)</th>
+              <th>权重</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>8. 有效沟通</strong></td>
+              <td>
+                清晰表达并积极倾听，建立理解与信任。
+                <br><small>• 表达清晰度与逻辑性<br>• 积极倾听与共情<br>• 建设性反馈</small>
+              </td>
+              <td class="score-input">
+                <input type="range" min="1" max="5" value="3" step="0.1" class="slider" data-index="7">
+                <span class="score-value">3.0</span>
+              </td>
+              <td><input type="number" class="weight-input" value="1" min="0.1" step="0.1"></td>
+            </tr>
+            <tr>
+              <td><strong>9. 团队协作</strong></td>
+              <td>
+                在团队中协同努力，贡献价值并管理分歧。
+                <br><small>• 共享目标协同<br>• 建设性冲突管理<br>• 角色认知与贡献</small>
+              </td>
+              <td class="score-input">
+                <input type="range" min="1" max="5" value="3" step="0.1" class="slider" data-index="8">
+                <span class="score-value">3.0</span>
+              </td>
+              <td><input type="number" class="weight-input" value="1" min="0.1" step="0.1"></td>
+            </tr>
+            <tr>
+              <td><strong>10. 网络构建与利用</strong></td>
+              <td>
+                建立高质量人际网络并整合外部资源。
+                <br><small>• 建立多元化连接<br>• 寻求与提供价值<br>• 整合外部资源</small>
+              </td>
+              <td class="score-input">
+                <input type="range" min="1" max="5" value="3" step="0.1" class="slider" data-index="9">
+                <span class="score-value">3.0</span>
+              </td>
+              <td><input type="number" class="weight-input" value="1" min="0.1" step="0.1"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <button class="btn" onclick="updateAll()">更新分析</button>
+
+  </div>
+
+  <script>
+    // 所有维度名称（用于雷达图）
+    const labels = [
+      '成长型心态', '自我认知', '内在动机',
+      '主动学习', '坚毅执行', '适应变通', '实践创新',
+      '有效沟通', '团队协作', '网络构建'
+    ];
+
+    // 默认评分（10项）
+    let scores = Array(10).fill(3);
+    let weights = Array(10).fill(1);
+
+    // 雷达图实例
+    const ctx = document.getElementById('radarChart').getContext('2d');
+    const radarChart = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: '成长潜力',
+          data: scores,
+          backgroundColor: 'rgba(74, 111, 165, 0.2)',
+          borderColor: 'rgba(74, 111, 165, 1)',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        scales: {
+          r: {
+            min: 1,
+            max: 5,
+            ticks: { stepSize: 1 }
+          }
+        },
+        responsive: true,
+        maintainAspectRatio: false
+      }
+    });
+
+    // 绑定滑块事件
+    document.querySelectorAll('.slider').forEach(slider => {
+      slider.addEventListener('input', function () {
+        const value = parseFloat(this.value);
+        this.nextElementSibling.textContent = value.toFixed(1);
+        scores[this.dataset.index] = value;
+        updateAll();
+      });
+    });
+
+    // 更新总分、雷达图、评价
+    function updateAll() {
+      // 更新权重数组
+      document.querySelectorAll('.weight-input').forEach((input, i) => {
+        weights[i] = parseFloat(input.value) || 1;
+      });
+
+      // 计算加权总分（百分制）
+      const weightedSum = scores.reduce((sum, score, i) => sum + score * weights[i], 0);
+      const totalWeight = weights.reduce((a, b) => a + b, 0);
+      const averageScore = weightedSum / totalWeight; // 平均分（5分制）
+      const totalPercentage = (averageScore / 5) * 100;
+      document.getElementById('totalScore').textContent = totalPercentage.toFixed(1);
+
+      // 更新雷达图
+      radarChart.data.datasets[0].data = scores;
+      radarChart.update();
+
+      // 更新评价
+      const level = getLevel(totalPercentage);
+      document.getElementById('overallLevel').textContent = level.title;
+      document.getElementById('overallFeedback').textContent = level.feedback;
+
+      // 生成建议
+      generateSuggestions();
+    }
+
+    function getLevel(score) {
+      if (score >= 90) return { title: "卓越潜力", feedback: "你具备极强的成长潜力，是引领变革的未来之星。" };
+      if (score >= 80) return { title: "高潜力", feedback: "你拥有强大的成长动力和执行力，持续精进将带来飞跃。" };
+      if (score >= 70) return { title: "良好潜力", feedback: "你具备良好的成长基础，部分领域可进一步突破。" };
+      if (score >= 60) return { title: "中等潜力", feedback: "你具备基本的成长意识，但在关键维度上仍有提升空间。" };
+      return { title: "待提升", feedback: "建议系统性地反思和提升内在驱动与行为策略。" };
+    }
+
+    function generateSuggestions() {
+      const suggestionsDiv = document.getElementById('suggestions');
+      suggestionsDiv.innerHTML = '';
+
+      // 找出低于3.0的维度
+      const lowDimensions = [];
+      scores.forEach((score, i) => {
+        if (score < 3.0) {
+          lowDimensions.push({ index: i, score, name: labels[i] });
+        }
+      });
+
+      if (lowDimensions.length === 0) {
+        const suggestion = document.createElement('div');
+        suggestion.className = 'suggestion';
+        suggestion.innerHTML = '🎉 恭喜！你在所有维度上表现均衡，继续保持并深化优势领域。';
+        suggestionsDiv.appendChild(suggestion);
+      } else {
+        lowDimensions.forEach(item => {
+          const suggestion = document.createElement('div');
+          suggestion.className = 'suggestion';
+          suggestion.innerHTML = `<strong>📌 建议提升「${item.name}」</strong>（当前分：${item.score.toFixed(1)}）<br>
+            可尝试：<br>
+            • 每周设定一个小挑战并记录反思<br>
+            • 主动寻求一次建设性反馈<br>
+            • 制定一个30天微习惯计划`;
+          suggestionsDiv.appendChild(suggestion);
+        });
+      }
+    }
+
+    // 初始化
+    updateAll();
+  </script>
+
+</body>
+</html>

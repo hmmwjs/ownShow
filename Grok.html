@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Growth Potential Self-Assessment</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7fa;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section {
+            margin-bottom: 40px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+        .dimension-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+        }
+        .dimension-card h4 {
+            margin-top: 0;
+        }
+        .score-input {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .score-input label {
+            margin-right: 10px;
+        }
+        input[type="range"], input[type="number"] {
+            margin-right: 10px;
+        }
+        #radarChart {
+            max-width: 600px;
+            margin: 20px auto;
+        }
+        #totalScore {
+            font-size: 24px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        #suggestions {
+            margin-top: 20px;
+        }
+        .suggestion-item {
+            background: #fff9e6;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        /* Responsive design for mobile */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            table {
+                font-size: 14px;
+            }
+            .dimension-card {
+                padding: 10px;
+            }
+            #radarChart {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Personal Growth Potential Self-Assessment</h1>
+        <p>This tool allows you to self-assess your growth potential based on a comprehensive model with three core dimensions: Internal Drivers, Behavioral Strategies, and Systemic Interaction. Each dimension has sub-dimensions with definitions and key indicators explained in tables below.</p>
+        <p>Rate yourself on a scale of 1-5 (default: 3) for each sub-dimension. Weights are customizable (default: 1 for each). The radar chart, total score (out of 100), and suggestions update in real-time as you adjust scores and weights.</p>
+
+        <div class="section">
+            <h2>Dimension Explanations</h2>
+            
+            <h3>Internal Drivers (Why Grow?)</h3>
+            <p>Individual's internal psychological and cognitive framework, serving as the underlying operating system and energy source for growth. Independent of specific behaviors and external environment.</p>
+            <table>
+                <tr><th>Sub-Dimension</th><th>Definition</th><th>Key Indicators</th></tr>
+                <tr><td>Growth Mindset</td><td>Belief that abilities, intelligence, and talents can be developed through effort, learning, and persistence, rather than being fixed.</td><td>- View challenges as opportunities: Actively seek and enjoy difficult tasks.<br>- Learn from failure: See setbacks and criticism as valuable feedback, not personal denial.<br>- Believe in the value of effort: Consider sustained effort as the path to mastery.</td></tr>
+                <tr><td>Self-Awareness</td><td>Clear and accurate understanding of one's emotions, core values, strengths, and blind spots.</td><td>- Emotional awareness and management: Accurately identify and effectively regulate emotional states.<br>- Value clarification: Have clear and stable personal core values to guide choices.<br>- Reflection on strengths and weaknesses: Objectively assess own strengths and areas for improvement.</td></tr>
+                <tr><td>Intrinsic Motivation</td><td>Driven by internal interest, curiosity, sense of achievement, or mission, rather than external rewards or pressure.</td><td>- Interest-driven: Strong curiosity and passion for the field engaged in.<br>- Pursuit of autonomy: Desire to control own work and life, seeking independent decision-making.<br>- Internal sense of achievement: Satisfaction mainly from task completion and personal progress, not external praise.</td></tr>
+            </table>
+
+            <h3>Behavioral Strategies (How to Grow?)</h3>
+            <p>Methods by which individuals convert internal drives into specific actions and continuously optimize action outcomes. Independent of inner thoughts and external resources.</p>
+            <table>
+                <tr><th>Sub-Dimension</th><th>Definition</th><th>Key Indicators</th></tr>
+                <tr><td>Proactive Learning</td><td>Active and continuous habit of acquiring, integrating, and applying new knowledge and skills.</td><td>- Efficient information acquisition: Quickly filter, absorb, and understand key information.<br>- Deliberate practice and iteration: Consciously practice in the "learning zone" and improve through feedback.<br>- Knowledge transfer application: Flexibly apply knowledge or skills from one field to solve problems in others.</td></tr>
+                <tr><td>Grit & Execution</td><td>Maintaining passion and perseverance for long-term goals, showing strong resilience in the face of difficulties and setbacks.</td><td>- Long-term goal focus: Break down long-term goals and persistently work towards them without short-term distractions.<br>- Resilience: Quickly adjust mindset after failure, learn lessons, and re-engage.<br>- Habit formation ability: Systematically turn key behaviors into long-term, stable habits.</td></tr>
+                <tr><td>Adaptive Flexibility</td><td>Ability to quickly adjust strategies, goals, and behaviors to adapt to new situations in uncertain environments.</td><td>- Rapid skill iteration: Quickly learn and master new skills to maintain competitiveness based on environmental changes.<br>- Strategy adjustment ability: Flexibly conceive and execute alternative plans when original plans no longer apply.<br>- Cognitive flexibility: View problems from multiple angles, not sticking to a single thinking mode.</td></tr>
+                <tr><td>Applied Innovation</td><td>Ability to convert ideas and knowledge into practical solutions and make creative improvements in practice.</td><td>- Problem reframing ability: Break out of traditional frameworks to redefine the core of problems.<br>- Hands-on problem-solving: Emphasize validation and optimization of ideas through practice, experiments, and prototypes.<br>- Value creation orientation: Ultimate goal of actions is to create new, valuable outcomes (products, services, processes, etc.).</td></tr>
+            </table>
+
+            <h3>Systemic Interaction (With What to Grow?)</h3>
+            <p>Ability of individuals to connect, collaborate, and exchange value with the external world (including people, organizations, information, and resources). Independent of personal internal state and independent actions.</p>
+            <table>
+                <tr><th>Sub-Dimension</th><th>Definition</th><th>Key Indicators</th></tr>
+                <tr><td>Effective Communication</td><td>Clearly and precisely convey information, ideas, and emotions, and actively listen and understand others.</td><td>- Expression clarity and logic: Organize and express views in an orderly and logical manner.<br>- Active listening and empathy: Focus on listening and accurately understand the other's intentions and emotions.<br>- Constructive feedback: Give and receive honest, specific, actionable feedback.</td></tr>
+                <tr><td>Team Collaboration</td><td>Ability to effectively contribute, influence, and collaborate in a team for common goals.</td><td>- Shared goal synergy: Align personal goals with team goals and collaborate for them.<br>- Constructive conflict management: Identify and resolve team disagreements in a cooperative way.<br>- Role awareness and contribution: Clearly understand own role in the team and proactively take responsibility and contribute value.</td></tr>
+                <tr><td>Network Building & Leverage</td><td>Ability to build, maintain, and utilize high-quality interpersonal networks to gain information, support, and opportunities.</td><td>- Build diverse connections: Actively establish meaningful contacts with people from different backgrounds and fields.<br>- Seek and provide value: In social networks, actively seek help and willingly provide value to others.<br>- Integrate external resources: Skillfully use interpersonal networks and external tools/platforms to amplify personal efforts and solve complex problems.</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Self-Assessment</h2>
+            <div id="dimensions"></div>
+            <canvas id="radarChart"></canvas>
+            <div id="totalScore">Total Score: 60/100</div>
+            <div id="suggestions">
+                <h3>Suggestions for Improvement</h3>
+                <div id="suggestionList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dimensions = [
+            { name: 'Growth Mindset', group: 'Internal Drivers', defaultScore: 3, suggestions: 'To improve, actively seek challenges, learn from failures by journaling lessons, and affirm the value of effort daily.' },
+            { name: 'Self-Awareness', group: 'Internal Drivers', defaultScore: 3, suggestions: 'Enhance by practicing daily emotional check-ins, clarifying values through reflection exercises, and seeking feedback on strengths/weaknesses.' },
+            { name: 'Intrinsic Motivation', group: 'Internal Drivers', defaultScore: 3, suggestions: 'Boost by pursuing passion projects, increasing autonomy in tasks, and focusing on internal rewards like personal growth.' },
+            { name: 'Proactive Learning', group: 'Behavioral Strategies', defaultScore: 3, suggestions: 'Improve by setting weekly learning goals, engaging in deliberate practice, and applying new knowledge across domains.' },
+            { name: 'Grit & Execution', group: 'Behavioral Strategies', defaultScore: 3, suggestions: 'Build by breaking goals into steps, developing resilience through mindset shifts, and using habit trackers.' },
+            { name: 'Adaptive Flexibility', group: 'Behavioral Strategies', defaultScore: 3, suggestions: 'Enhance by practicing scenario planning, learning new skills quickly, and adopting multiple perspectives in problem-solving.' },
+            { name: 'Applied Innovation', group: 'Behavioral Strategies', defaultScore: 3, suggestions: 'Foster by reframing problems creatively, prototyping ideas, and focusing on value creation in daily tasks.' },
+            { name: 'Effective Communication', group: 'Systemic Interaction', defaultScore: 3, suggestions: 'Refine by structuring thoughts logically, practicing active listening, and exchanging constructive feedback regularly.' },
+            { name: 'Team Collaboration', group: 'Systemic Interaction', defaultScore: 3, suggestions: 'Strengthen by aligning with team goals, managing conflicts positively, and clarifying roles for better contributions.' },
+            { name: 'Network Building & Leverage', group: 'Systemic Interaction', defaultScore: 3, suggestions: 'Expand by connecting diversely, exchanging value in networks, and leveraging resources for amplified impact.' }
+        ];
+
+        let scores = dimensions.map(d => d.defaultScore);
+        let weights = dimensions.map(() => 1);
+
+        const radarCtx = document.getElementById('radarChart').getContext('2d');
+        const radarChart = new Chart(radarCtx, {
+            type: 'radar',
+            data: {
+                labels: dimensions.map(d => d.name),
+                datasets: [{
+                    label: 'Your Scores',
+                    data: scores,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 5,
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
+        });
+
+        function updateChartAndScore() {
+            radarChart.data.datasets[0].data = scores;
+            radarChart.update();
+
+            const totalWeight = weights.reduce((a, b) => a + b, 0);
+            const weightedSum = scores.reduce((sum, score, i) => sum + score * weights[i], 0);
+            const maxWeightedSum = 5 * totalWeight;
+            const percentage = Math.round((weightedSum / maxWeightedSum) * 100);
+            document.getElementById('totalScore').textContent = `Total Score: ${percentage}/100`;
+
+            const suggestionList = document.getElementById('suggestionList');
+            suggestionList.innerHTML = '';
+            dimensions.forEach((dim, i) => {
+                if (scores[i] < 3) {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item';
+                    item.textContent = `${dim.name} (Score: ${scores[i]}): ${dim.suggestions}`;
+                    suggestionList.appendChild(item);
+                }
+            });
+            if (suggestionList.innerHTML === '') {
+                suggestionList.innerHTML = '<p>All areas are at or above average! Continue building on your strengths.</p>';
+            }
+        }
+
+        const dimensionsContainer = document.getElementById('dimensions');
+        dimensions.forEach((dim, index) => {
+            const card = document.createElement('div');
+            card.className = 'dimension-card';
+            card.innerHTML = `
+                <h4>${dim.name} (${dim.group})</h4>
+                <p>See explanation table above for details.</p>
+                <div class="score-input">
+                    <label>Score (1-5):</label>
+                    <input type="range" min="1" max="5" value="${dim.defaultScore}" step="1" id="score${index}">
+                    <span id="scoreValue${index}">${dim.defaultScore}</span>
+                </div>
+                <div class="score-input">
+                    <label>Weight (default 1):</label>
+                    <input type="number" min="0" value="1" step="0.1" id="weight${index}">
+                </div>
+            `;
+            dimensionsContainer.appendChild(card);
+
+            const scoreInput = document.getElementById(`score${index}`);
+            const scoreValue = document.getElementById(`scoreValue${index}`);
+            scoreInput.addEventListener('input', () => {
+                scores[index] = parseInt(scoreInput.value);
+                scoreValue.textContent = scores[index];
+                updateChartAndScore();
+            });
+
+            const weightInput = document.getElementById(`weight${index}`);
+            weightInput.addEventListener('input', () => {
+                weights[index] = parseFloat(weightInput.value) || 0;
+                updateChartAndScore();
+            });
+        });
+
+        updateChartAndScore();
+    </script>
+</body>
+</html>
