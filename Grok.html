@@ -95,6 +95,46 @@
                 max-width: 100%;
             }
         }
+        /* Mobile metric cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1rem;
+        }
+        .metric-card {
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+        }
+        .metric-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 6px;
+        }
+        .metric-desc {
+            font-size: 0.95rem;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        .progress {
+            width: 100%;
+            height: 8px;
+            background: #edf2f7;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 60%;
+            background: linear-gradient(90deg, #4a6fa5, #166b8a);
+            border-radius: 999px;
+            transition: width 0.2s ease;
+        }
+        @media (max-width: 768px) {
+            .metrics-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -188,6 +228,41 @@
             }
         });
 
+        function transformTablesToMetrics() {
+            const nameToIndex = {};
+            if (typeof dimensions !== 'undefined' && Array.isArray(dimensions)) {
+                dimensions.forEach((dim, i) => {
+                    if (dim && dim.name) nameToIndex[dim.name.trim().toLowerCase()] = i;
+                });
+            }
+            document.querySelectorAll('.section-content table').forEach((table) => {
+                const grid = document.createElement('div');
+                grid.className = 'metrics-grid';
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach((tr) => {
+                    const tds = tr.querySelectorAll('td');
+                    if (tds.length >= 3) {
+                        const rawTitle = tds[0].textContent.trim();
+                        const name = rawTitle.replace(/^\d+\.\s*/, '');
+                        const lowerName = name.toLowerCase();
+                        const idx = (lowerName in nameToIndex) ? nameToIndex[lowerName] : -1;
+                        const definitionHtml = tds[1].innerHTML;
+                        const indicatorsHtml = tds[2].innerHTML;
+                        const card = document.createElement('div');
+                        card.className = 'metric-card';
+                        card.innerHTML = `
+                            <div class="metric-title">${name}</div>
+                            <div class="metric-desc">${definitionHtml}<br><small>${indicatorsHtml}</small></div>
+                            <div class="progress"><div class="progress-bar" ${idx > -1 ? `data-index="${idx}"` : ''} style="width:60%"></div></div>
+                        `;
+                        grid.appendChild(card);
+                    }
+                });
+                table.parentNode.insertBefore(grid, table);
+                table.remove();
+            });
+        }
+
         function updateChartAndScore() {
             radarChart.data.datasets[0].data = scores;
             radarChart.update();
@@ -211,6 +286,14 @@
             if (suggestionList.innerHTML === '') {
                 suggestionList.innerHTML = '<p>All areas are at or above average! Continue building on your strengths.</p>';
             }
+            // Sync progress bars width with current scores
+            document.querySelectorAll('.progress-bar[data-index]').forEach((bar) => {
+                const i = parseInt(bar.getAttribute('data-index'));
+                if (!isNaN(i)) {
+                    const percentage = Math.max(0, Math.min(100, (scores[i] / 5) * 100));
+                    bar.style.width = `${percentage}%`;
+                }
+            });
         }
 
         const dimensionsContainer = document.getElementById('dimensions');
@@ -247,6 +330,7 @@
             });
         });
 
+        transformTablesToMetrics();
         updateChartAndScore();
     </script>
 </body>

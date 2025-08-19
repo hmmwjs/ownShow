@@ -116,6 +116,21 @@
             align-items: center;
             gap: 1rem;
         }
+        .progress {
+            width: 100%;
+            height: 8px;
+            background: #edf2f7;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 60%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 999px;
+            transition: width 0.2s ease;
+        }
 
         .score-slider {
             flex-grow: 1;
@@ -328,28 +343,15 @@
                         <input type="number" min="0" max="100" value="${defaultWeight.toFixed(1)}" class="weight-input" id="weight-${index}" data-index="${index}">
                     </div>
                 </div>
+                <div class="progress"><div class="progress-bar" id="progress-${index}" style="width:60%"></div></div>
                 <details>
                     <summary>展开/收起详情</summary>
-                    <table class="details-table">
-                        <tbody>
-                            <tr>
-                                <th>定义</th>
-                                <td>${item.definition}</td>
-                            </tr>
-                            <tr>
-                                <th>积极指标</th>
-                                <td class="positive">${item.positive}</td>
-                            </tr>
-                            <tr>
-                                <th>负面指标</th>
-                                <td class="negative">${item.negative}</td>
-                            </tr>
-                            <tr>
-                                <th>对成长的影响</th>
-                                <td>${item.impact}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="details-text">
+                        <p><strong>定义：</strong>${item.definition}</p>
+                        <p class="positive"><strong>积极指标：</strong>${item.positive}</p>
+                        <p class="negative"><strong>负面指标：</strong>${item.negative}</p>
+                        <p><strong>对成长的影响：</strong>${item.impact}</p>
+                    </div>
                 </details>
             </div>
         `;
@@ -363,7 +365,10 @@
             input.addEventListener('input', (event) => {
                 if(event.target.classList.contains('score-slider')) {
                     const index = event.target.dataset.index;
-                    document.getElementById(`score-value-${index}`).textContent = parseFloat(event.target.value).toFixed(1);
+                    const val = parseFloat(event.target.value);
+                    document.getElementById(`score-value-${index}`).textContent = val.toFixed(1);
+                    const bar = document.getElementById(`progress-${index}`);
+                    if (bar) { bar.style.width = `${(val/5)*100}%`; }
                 }
                 updateAll();
             });
