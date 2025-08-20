@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人成长自评系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #3f51b5;
+            --secondary: #f50057;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --info: #2196f3;
+            --light: #f5f5f5;
+            --dark: #212121;
+            --border: #e0e0e0;
+            --text: #424242;
+            --bg: #fafafa;
+            --shadow: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--bg);
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--info));
+            color: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1rem 1.5rem;
+            background: var(--light);
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .dimensions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+        }
+
+        .dimensions-table th, .dimensions-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dimensions-table th {
+            background-color: var(--light);
+            font-weight: 600;
+        }
+
+        .dimension-row {
+            transition: background-color 0.2s;
+        }
+
+        .dimension-row:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        .definition {
+            font-size: 0.9rem;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .indicators {
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+
+        .indicators ul {
+            padding-left: 1.5rem;
+            margin: 0.5rem 0;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            margin-top: 0.5rem;
+        }
+
+        .slider-container label {
+            width: 80px;
+            font-size: 0.9rem;
+        }
+
+        .slider {
+            flex: 1;
+            height: 5px;
+            -webkit-appearance: none;
+            background: var(--border);
+            border-radius: 5px;
+            outline: none;
+            margin: 0 10px;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .slider-value {
+            width: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .weight-slider-container {
+            display: flex;
+            align-items: center;
+            margin-top: 0.3rem;
+        }
+
+        .weight-slider-container label {
+            width: 50px;
+            font-size: 0.8rem;
+            margin-right: 10px;
+        }
+
+        .weight-slider {
+            flex: 1;
+            height: 3px;
+            -webkit-appearance: none;
+            background: var(--border);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .weight-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--secondary);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .weight-value {
+            width: 35px;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+
+        .visualization {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-container {
+            flex: 1 1 400px;
+            min-height: 400px;
+            position: relative;
+        }
+
+        .feedback-container {
+            flex: 1 1 400px;
+        }
+
+        .score-display {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: var(--light);
+            border-radius: 8px;
+        }
+
+        .improvement-areas {
+            margin-top: 1rem;
+        }
+
+        .improvement-item {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-left: 4px solid var(--warning);
+            background: white;
+            border-radius: 0 4px 4px 0;
+            box-shadow: var(--shadow);
+        }
+
+        .improvement-item h4 {
+            margin-bottom: 0.5rem;
+            color: var(--warning);
+        }
+
+        .improvement-item p {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .improvement-item .example {
+            font-style: italic;
+            color: var(--info);
+            font-size: 0.85rem;
+        }
+
+        .ranking-list {
+            list-style: none;
+            counter-reset: ranking;
+        }
+
+        .ranking-item {
+            counter-increment: ranking;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: white;
+            border-radius: 4px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ranking-item:before {
+            content: counter(ranking);
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            margin-right: 0.5rem;
+        }
+
+        .score-badge {
+            background: var(--info);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .slider-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .slider-container label {
+                margin-bottom: 0.5rem;
+            }
+            
+            .dimensions-table th, .dimensions-table td {
+                padding: 0.5rem;
+            }
+            
+            .visualization {
+                flex-direction: column;
+            }
+            
+            .chart-container {
+                min-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>个人成长自评系统</h1>
+            <div class="subtitle">评估你的成长型心态、行为策略与系统互动能力</div>
+        </header>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>自评表</h2>
+                <div>总分：<span id="total-score">0</span>/100</div>
+            </div>
+            <div class="card-body">
+                <table class="dimensions-table">
+                    <thead>
+                        <tr>
+                            <th>一级维度</th>
+                            <th>二级维度</th>
+                            <th>定义与评价指标</th>
+                            <th>评分 (1-5)</th>
+                            <th>权重</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dimensions-tbody">
+                        <!-- 动态生成内容 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="visualization">
+            <div class="card chart-container">
+                <div class="card-header">
+                    <h2>能力雷达图</h2>
+                </div>
+                <div class="card-body">
+                    <canvas id="radar-chart"></canvas>
+                </div>
+            </div>
+            
+            <div class="card feedback-container">
+                <div class="card-header">
+                    <h2>评价与建议</h2>
+                </div>
+                <div class="card-body">
+                    <div class="score-display">
+                        总得分：<span id="final-score">0</span>/100
+                    </div>
+                    <div class="improvement-areas" id="improvement-areas">
+                        <!-- 动态生成内容 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>维度排序（从低到高）</h2>
+            </div>
+            <div class="card-body">
+                <ol class="ranking-list" id="ranking-list">
+                    <!-- 动态生成内容 -->
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 数据定义
+        const dimensions = [
+            {
+                id: 'growth-mindset',
+                primary: 'WHY 内在驱动',
+                secondary: '成长型心态',
+                definition: '把能力视为可塑、挑战视为养分',
+                indicators: [
+                    '主动寻找并报名高难度任务 ≥1 次/季度',
+                    '失败后 24h 内完成复盘并输出迭代方案'
+                ],
+                score: 3,
+                weight: 10
+            },
+            {
+                id: 'self-awareness',
+                primary: 'WHY 内在驱动',
+                secondary: '自我认知',
+                definition: '像第三方一样看清自己的情绪、价值观与长短板',
+                indicators: [
+                    '情绪标签化准确率 ≥80%（自评-他评一致性）',
+                    '能列出 3 条核心价值观并给出对应行为实例'
+                ],
+                score: 3,
+                weight: 10
+            },
+            {
+                id: 'intrinsic-motivation',
+                primary: 'WHY 内在驱动',
+                secondary: '内在动机（含动力耐力）',
+                definition: '兴趣/使命感而非外部奖励是主要燃料，并愿意为长期目标持续投入',
+                indicators: [
+                    '无外部回报时仍自愿投入 ≥20% 额外时间',
+                    '设定 ≥6 个月长期目标，且周均推进度 ≥80%'
+                ],
+                score: 3,
+                weight: 10
+            },
+            {
+                id: 'knowledge-modeling',
+                primary: 'HOW 行为策略',
+                secondary: '知识建模',
+                definition: '用最少概念把陌生领域拆成可复用的「知识地图」',
+                indicators: [
+                    '新领域 1 周内输出一张 A4 结构图，被他人引用 ≥1 次'
+                ],
+                score: 3,
+                weight: 10
+            },
+            {
+                id: 'system-application',
+                primary: 'HOW 行为策略',
+                secondary: '系统应用',
+                definition: '把知识迁移到复杂/不确定场景并产生实际结果',
+                indicators: [
+                    '3 个月内用跨领域知识解决高不确定问题 ≥1 个，ROI≥3'
+                ],
+                score: 3,
+                weight: 10
+            },
+            {
+                id: 'cognitive-iteration',
+                primary: 'HOW 行为策略',
+                secondary: '认知迭代（含韧性）',
+                definition: '主动寻求负反馈并快速修正思维或行为，遭遇打击后情绪-行动双恢复',
+                indicators: [
+                    '收到批评/失败 48h 内发布改进计划并公开进度',
+                    '情绪恢复弹性：重大挫折后 3 天内情绪评分恢复 ≥80% 基线'
+                ],
+                score: 3,
+                weight: 10
+            },
+            {
+                id: 'network-building',
+                primary: 'WITH 系统互动',
+                secondary: '网络构建',
+                definition: '建立并维护高多样性、高互惠度的关系网',
+                indicators: [
+                    '网络异质性指数 ≥0.6',
+                    '每季度促成跨领域合作 ≥2 次'
+                ],
+                score: 3,
+                weight: 10
+            },
+            {
+                id: 'effective-communication',
+                primary: 'WITH 系统互动',
+                secondary: '有效沟通',
+                definition: '让信息在不同背景人群间无损传递',
+                indicators: [
+                    '30 秒内让对方复述要点且准确率 ≥90%'
+                ],
+                score: 3,
+                weight: 10
+            },
+            {
+                id: 'team-collaboration',
+                primary: 'WITH 系统互动',
+                secondary: '团队协作',
+                definition: '在集体中放大他人能力并达成共同目标',
+                indicators: [
+                    '团队 OKR 完成率 ≥85%',
+                    '成员对本人贡献满意度 ≥4/5'
+                ],
+                score: 3,
+                weight: 10
+            }
+        ];
+
+        // 改进建议
+        const improvementSuggestions = {
+            'growth-mindset': {
+                title: '成长型心态',
+                suggestion: '主动寻找一个小但超出你舒适区的任务，并设定一个公开承诺的截止日期。',
+                example: '例如：如果你通常避免公开演讲，可以报名参加一个5分钟的技术分享会，并提前在社交媒体上宣布你的演讲主题。'
+            },
+            'self-awareness': {
+                title: '自我认知',
+                suggestion: '开始记录情绪日记，每天花5分钟记录你的主要情绪、触发因素和反应。',
+                example: '例如：使用"情绪-触发-反应"格式记录："感到焦虑-项目截止日期临近-开始过度准备和检查每个细节"。'
+            },
+            'intrinsic-motivation': {
+                title: '内在动机',
+                suggestion: '找到一个你愿意无偿投入的社区项目，设定一个6个月的学习和贡献目标。',
+                example: '例如：如果你对教育有热情，可以加入一个在线编程教育平台，每月贡献2小时作为导师，并设定在6个月内帮助10名初学者完成基础课程的目标。'
+            },
+            'knowledge-modeling': {
+                title: '知识建模',
+                suggestion: '选择你最近接触的一个新概念，用思维导图工具创建一个一页纸的知识地图，并分享给同事获取反馈。',
+                example: '例如：如果你在学习区块链技术，创建一个包含核心概念、应用场景和关键参与者的思维导图，并邀请一位技术同事提供反馈。'
+            },
+            'system-application': {
+                title: '系统应用',
+                suggestion: '识别你所在团队的一个反复出现的问题，应用你最近学到的跨领域知识设计一个解决方案。',
+                example: '例如：如果团队会议效率低，你可以应用敏捷方法论中的"站会"概念，设计一个15分钟的每日同步会议，并测量实施前后的效率提升。'
+            },
+            'cognitive-iteration': {
+                title: '认知迭代',
+                suggestion: '主动寻求一次对你最近工作的严厉反馈，并创建一个公开的改进计划。',
+                example: '例如：向你的直接上级请求对你的项目报告进行详细批评，然后在团队共享文档中发布一个基于反馈的三步改进计划，并每周更新进展。'
+            },
+            'network-building': {
+                title: '网络构建',
+                suggestion: '每月安排一次"咖啡聊天"，接触一个与你工作领域完全不同的专业人士。',
+                example: '例如：如果你是一个软件工程师，可以联系一位市场营销专家，了解他们如何衡量用户参与度，并寻找可能的合作机会。'
+            },
+            'effective-communication': {
+                title: '有效沟通',
+                suggestion: '在每次重要沟通后，使用"电梯测试"：让对方用30秒总结你的要点，然后调整你的表达方式直到准确率超过90%。',
+                example: '例如：在项目汇报后，请一位同事用30秒复述项目的关键目标和下一步行动，根据他们的理解调整你的下一次演示。'
+            },
+            'team-collaboration': {
+                title: '团队协作',
+                suggestion: '识别团队中的一个低可见度但高价值的任务，主动承担并带领一名初级同事一起完成。',
+                example: '例如：如果团队代码文档不完整，你可以主动组织一个"文档冲刺"活动，邀请一位初级开发者合作，在两周内完成核心模块的文档更新，并测量其他团队成员使用文档的频率提升。'
+            }
+        };
+
+        // 初始化雷达图
+        let radarChart;
+        function initChart() {
+            const ctx = document.getElementById('radar-chart').getContext('2d');
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: dimensions.map(d => d.secondary),
+                    datasets: [{
+                        label: '当前评分',
+                        data: dimensions.map(d => d.score),
+                        backgroundColor: 'rgba(63, 81, 181, 0.2)',
+                        borderColor: 'rgba(63, 81, 181, 1)',
+                        pointBackgroundColor: 'rgba(63, 81, 181, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(63, 81, 181, 1)'
+                    }]
+                },
+                options: {
+                    elements: {
+                        line: {
+                            borderWidth: 3
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 5
+                        }
+                    }
+                }
+            });
+        }
+
+        // 更新雷达图
+        function updateChart() {
+            radarChart.data.datasets[0].data = dimensions.map(d => d.score);
+            radarChart.update();
+        }
+
+        // 计算总分
+        function calculateTotalScore() {
+            let totalWeightedScore = 0;
+            let totalWeight = 0;
+            
+            dimensions.forEach(d => {
+                const normalizedScore = (d.score / 5) * 100;
+                totalWeightedScore += normalizedScore * (d.weight / 100);
+                totalWeight += d.weight;
+            });
+            
+            // 确保权重总和为100%
+            const finalScore = totalWeight > 0 ? (totalWeightedScore / (totalWeight / 100)) : 0;
+            document.getElementById('total-score').textContent = Math.round(finalScore);
+            document.getElementById('final-score').textContent = Math.round(finalScore);
+            
+            return finalScore;
+        }
+
+        // 更新排名列表
+        function updateRankingList() {
+            const sortedDimensions = [...dimensions].sort((a, b) => a.score - b.score);
+            const rankingList = document.getElementById('ranking-list');
+            rankingList.innerHTML = '';
+            
+            sortedDimensions.forEach(d => {
+                const li = document.createElement('li');
+                li.className = 'ranking-item';
+                li.innerHTML = `
+                    <span>${d.secondary}</span>
+                    <span class="score-badge">${d.score}/5</span>
+                `;
+                rankingList.appendChild(li);
+            });
+        }
+
+        // 更新改进建议
+        function updateImprovementSuggestions() {
+            const sortedDimensions = [...dimensions].sort((a, b) => a.score - b.score);
+            const lowestThree = sortedDimensions.slice(0, 3);
+            const improvementArea = document.getElementById('improvement-areas');
+            improvementArea.innerHTML = '';
+            
+            lowestThree.forEach(d => {
+                const suggestion = improvementSuggestions[d.id];
+                const div = document.createElement('div');
+                div.className = 'improvement-item';
+                div.innerHTML = `
+                    <h4>${suggestion.title}</h4>
+                    <p>${suggestion.suggestion}</p>
+                    <p class="example"><strong>示例：</strong>${suggestion.example}</p>
+                `;
+                improvementArea.appendChild(div);
+            });
+        }
+
+        // 渲染表格
+        function renderDimensionsTable() {
+            const tbody = document.getElementById('dimensions-tbody');
+            tbody.innerHTML = '';
+            
+            dimensions.forEach(d => {
+                const tr = document.createElement('tr');
+                tr.className = 'dimension-row';
+                tr.innerHTML = `
+                    <td>${d.primary}</td>
+                    <td>${d.secondary}</td>
+                    <td>
+                        <div class="definition">${d.definition}</div>
+                        <div class="indicators">
+                            <ul>
+                                ${d.indicators.map(i => `<li>${i}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="slider-container">
+                            <label>评分：</label>
+                            <input type="range" min="1" max="5" value="${d.score}" class="slider" id="score-${d.id}">
+                            <span class="slider-value" id="score-value-${d.id}">${d.score}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="weight-slider-container">
+                            <label>权重：</label>
+                            <input type="range" min="1" max="20" value="${d.weight}" class="weight-slider" id="weight-${d.id}">
+                            <span class="weight-value" id="weight-value-${d.id}">${d.weight}%</span>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+                
+                // 添加评分滑块事件监听
+                const scoreSlider = document.getElementById(`score-${d.id}`);
+                const scoreValue = document.getElementById(`score-value-${d.id}`);
+                
+                scoreSlider.addEventListener('input', (e) => {
+                    d.score = parseInt(e.target.value);
+                    scoreValue.textContent = d.score;
+                    updateChart();
+                    calculateTotalScore();
+                    updateRankingList();
+                    updateImprovementSuggestions();
+                });
+                
+                // 添加权重滑块事件监听
+                const weightSlider = document.getElementById(`weight-${d.id}`);
+                const weightValue = document.getElementById(`weight-value-${d.id}`);
+                
+                weightSlider.addEventListener('input', (e) => {
+                    d.weight = parseInt(e.target.value);
+                    weightValue.textContent = `${d.weight}%`;
+                    calculateTotalScore();
+                });
+            });
+        }
+
+        // 初始化应用
+        function initApp() {
+            renderDimensionsTable();
+            initChart();
+            calculateTotalScore();
+            updateRankingList();
+            updateImprovementSuggestions();
+        }
+
+        // 当页面加载完成时初始化
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
