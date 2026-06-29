@@ -35,7 +35,7 @@ body {
 /* Header */
 .site-header {
     border-bottom: 1px solid var(--border);
-    padding: 1.25rem 0;
+    padding: 0.8rem 0;
 }
 
 .site-header .container {
@@ -70,13 +70,13 @@ body {
 
 /* Hero */
 .hero {
-    padding: 5rem 0 4rem;
+    padding: 2rem 0 1.5rem;
 }
 
 .hero-grid {
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: 4rem;
+    gap: 2rem;
     align-items: start;
 }
 
@@ -90,21 +90,21 @@ body {
 }
 
 .hero h2 {
-    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
     font-weight: 700;
     line-height: 1.1;
     letter-spacing: -0.02em;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.8rem;
 }
 
 .hero-desc {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     color: var(--text-dim);
 }
 
 .hero-accent {
-    width: 80px;
-    height: 80px;
+    width: 50px;
+    height: 50px;
     background: linear-gradient(135deg, var(--accent), #764ba2);
     flex-shrink: 0;
     margin-top: 0.5rem;
@@ -112,7 +112,7 @@ body {
 
 /* Projects */
 .projects {
-    padding: 4rem 0 6rem;
+    padding: 1.5rem 0 2rem;
     border-top: 1px solid var(--border);
 }
 
@@ -121,7 +121,7 @@ body {
     letter-spacing: 0.15em;
     text-transform: uppercase;
     color: var(--accent);
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     font-weight: 600;
 }
 
@@ -137,7 +137,7 @@ body {
 .project-card {
     display: block;
     background: var(--card);
-    padding: 2rem;
+    padding: 1.2rem 1.5rem;
     text-decoration: none;
     color: var(--text);
     transition: background 0.2s;
@@ -153,25 +153,25 @@ body {
     letter-spacing: 0.1em;
     color: var(--accent);
     font-weight: 700;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 .project-card h3 {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 700;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.3rem;
     letter-spacing: -0.01em;
 }
 
 .project-card p {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--text-dim);
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
 .card-link {
     display: inline-block;
-    margin-top: 1.2rem;
+    margin-top: 0.8rem;
     font-size: 0.8rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -190,7 +190,7 @@ body {
 /* Footer */
 .site-footer {
     border-top: 1px solid var(--border);
-    padding: 2rem 0;
+    padding: 1rem 0;
 }
 
 .site-footer p {
@@ -202,17 +202,17 @@ body {
 /* Responsive */
 @media (max-width: 768px) {
     .hero {
-        padding: 3rem 0 2.5rem;
+        padding: 1.5rem 0 1rem;
     }
 
     .hero-grid {
         grid-template-columns: 1fr;
-        gap: 2rem;
+        gap: 1rem;
     }
 
     .hero-accent {
-        width: 50px;
-        height: 50px;
+        width: 35px;
+        height: 35px;
     }
 
     .project-grid {
