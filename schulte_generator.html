@@ -104,7 +104,7 @@ const STATE = {
   target: 1, startTime: null, timerId: null, running: false,
   clicks: 0, errors: 0, intervals: [], searchTimes: [],
   lastFoundTime: null, completed: false, showHeatmap: false,
-  cursor: -1
+  cursor: -1, firstFoundIdx: -1
 };
 
 let W = 600, H = 500;
@@ -275,7 +275,7 @@ function render() {
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   let html = '';
 
-  const maxSearchTime = Math.max(...STATE.searchTimes, 1);
+  const maxSearchTime = Math.max(...STATE.searchTimes.filter((v, i) => i !== STATE.firstFoundIdx && v !== undefined), 1);
 
   for (let i = 0; i < STATE.regions.length; i++) {
     const r = STATE.regions[i];
@@ -283,7 +283,7 @@ function render() {
     let cls = 'region';
     if (STATE.found[i]) cls += ' found';
     if (i === STATE.cursor) cls += ' cursor';
-    if (STATE.showHeatmap && STATE.completed && STATE.searchTimes[i] !== undefined) {
+    if (STATE.showHeatmap && STATE.completed && STATE.searchTimes[i] !== undefined && i !== STATE.firstFoundIdx) {
       const t = STATE.searchTimes[i] / maxSearchTime;
       const h = Math.round((1 - t) * 120);
       const fill = `hsl(${h}, 70%, 35%)`;
@@ -308,7 +308,7 @@ function render() {
     const cls = STATE.found[i] ? 'number found' : 'number';
     html += `<text class="${cls}" data-idx="${i}" x="${r.cx.toFixed(1)}" y="${r.cy.toFixed(1)}" font-size="${fontSize}">${STATE.numbers[i]}</text>`;
 
-    if (STATE.showHeatmap && STATE.completed && STATE.searchTimes[i] !== undefined) {
+    if (STATE.showHeatmap && STATE.completed && STATE.searchTimes[i] !== undefined && i !== STATE.firstFoundIdx) {
       const time = (STATE.searchTimes[i] / 1000).toFixed(1);
       html += `<text class="heatmap-label" x="${r.cx.toFixed(1)}" y="${(r.cy + fontSize * 0.7).toFixed(1)}" font-size="${Math.min(12, fontSize * 0.45)}">${time}s</text>`;
     }
@@ -316,13 +316,16 @@ function render() {
 
   svg.innerHTML = html;
   svg.onclick = (e) => {
+    if (svg._touchUsed) { svg._touchUsed = false; return; }
     const idx = e.target.dataset?.idx;
     if (idx !== undefined) handleClick(parseInt(idx));
   };
   svg.ontouchstart = (e) => {
     e.preventDefault();
+    svg._touchUsed = true;
     const touch = e.touches[0];
-    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    let el = document.elementFromPoint(touch.clientX, touch.clientY);
+    while (el && el.dataset?.idx === undefined && el !== svg) el = el.parentElement;
     if (el && el.dataset?.idx !== undefined) handleClick(parseInt(el.dataset.idx));
   };
 }
@@ -350,6 +353,7 @@ function newGame() {
   STATE.completed = false;
   STATE.showHeatmap = false;
   STATE.cursor = -1;
+  STATE.firstFoundIdx = -1;
   document.getElementById('score').textContent = '-';
   document.getElementById('info').textContent = '正在生成网格...';
   setTimeout(() => {
@@ -379,6 +383,7 @@ function handleClick(idx) {
   STATE.clicks++;
   if (STATE.numbers[idx] === STATE.target) {
     STATE.found[idx] = true;
+    if (STATE.firstFoundIdx < 0) STATE.firstFoundIdx = idx;
     const now = performance.now();
     STATE.searchTimes[idx] = now - STATE.lastFoundTime;
     STATE.lastFoundTime = now;
