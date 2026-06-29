@@ -3,34 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>个人主页</title>
+    <title>hmmwjs</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header class="site-header">
         <div class="container">
-            <h1>hmmwjs</h1>
+            <h1 class="logo">hmmwjs</h1>
             <nav class="main-nav">
                 <a href="index.html" class="active">首页</a>
             </nav>
         </div>
     </header>
 
-    <main class="hero-section">
-        <div class="container">
-            <h2>欢迎来到我的个人空间</h2>
-            <p>还不知道写什么</p>
-            <div class="cta-buttons">
-                <a href="self-assessment.html" class="btn">个人成长性自评系统</a>
-                <a href="kimiK2.html" class="btn">成长自评byKimi</a>
-                <a href="qwenCoder3.html" class="btn">成长自评byQC3</a>
+    <main>
+        <section class="hero">
+            <div class="container">
+                <div class="hero-grid">
+                    <div class="hero-text">
+                        <p class="hero-label">PERSONAL SPACE</p>
+                        <h2>欢迎来到<br>我的个人空间</h2>
+                        <p class="hero-desc">探索、学习、成长</p>
+                    </div>
+                    <div class="hero-accent"></div>
+                </div>
             </div>
-        </div>
+        </section>
+
+        <section class="projects">
+            <div class="container">
+                <p class="section-label">PROJECTS</p>
+                <div class="project-grid">
+                    <a href="schulte_generator.html" class="project-card">
+                        <div class="card-number">01</div>
+                        <h3>Schulte 表生成器</h3>
+                        <p>Voronoi 网眼大小不一的专注力训练工具，支持热力图分析与键盘操作</p>
+                        <span class="card-link">开始训练 &rarr;</span>
+                    </a>
+                    <a href="self-assessment.html" class="project-card">
+                        <div class="card-number">02</div>
+                        <h3>个人成长性自评</h3>
+                        <p>系统化的自我评估框架</p>
+                        <span class="card-link">查看详情 &rarr;</span>
+                    </a>
+                    <a href="kimiK2.html" class="project-card">
+                        <div class="card-number">03</div>
+                        <h3>成长自评 by Kimi</h3>
+                        <p>Kimi K2 驱动的自评方案</p>
+                        <span class="card-link">查看详情 &rarr;</span>
+                    </a>
+                    <a href="qwenCoder3.html" class="project-card">
+                        <div class="card-number">04</div>
+                        <h3>成长自评 by Qwen</h3>
+                        <p>Qwen Coder 3 驱动的自评方案</p>
+                        <span class="card-link">查看详情 &rarr;</span>
+                    </a>
+                </div>
+            </div>
+        </section>
     </main>
 
     <footer class="site-footer">
         <div class="container">
-            <p>© 2025 保留所有权利</p>
+            <p>&copy; 2025 hmmwjs</p>
         </div>
     </footer>
 </body>

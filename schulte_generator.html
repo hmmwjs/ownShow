@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Schulte表生成器 - 网眼大小不一的网格</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#1a1a2e;color:#eee;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:12px 8px}
+h1{font-size:clamp(18px,3vw,24px);margin-bottom:12px;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.controls{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;justify-content:center;align-items:center}
+label{display:flex;align-items:center;gap:5px;font-size:clamp(12px,1.8vw,14px)}
+input[type=number]{width:55px;padding:5px 8px;border:1px solid #444;border-radius:6px;background:#2a2a4a;color:#fff;font-size:14px}
+select{padding:5px 8px;border:1px solid #444;border-radius:6px;background:#2a2a4a;color:#fff;font-size:14px}
+button{padding:7px 16px;border:none;border-radius:6px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:14px;cursor:pointer;transition:transform .2s}
+button:hover{transform:scale(1.05)}
+button:active{transform:scale(0.97)}
+.preset-btn{padding:5px 12px;border:1px solid #444;border-radius:6px;background:#2a2a4a;color:#aaa;font-size:12px;cursor:pointer;transition:all .2s}
+.preset-btn:hover,.preset-btn.active{background:#667eea;color:#fff;border-color:#667eea}
+.grid-wrap{background:#16162a;border-radius:12px;padding:clamp(4px,1vw,12px);box-shadow:0 4px 20px rgba(0,0,0,.3);position:relative;margin:0 8px}
+svg{display:block;width:100%;height:100%;cursor:pointer;touch-action:manipulation}
+.region{fill:#2a2a4a;stroke:#667eea;stroke-width:2;stroke-linejoin:round;transition:fill .15s}
+.region:hover{fill:#3a3a5a}
+.region.found{fill:#1a4a2e;stroke:#4ade80}
+.region.wrong{fill:rgba(239,68,68,.25);stroke:#ef4444}
+.region.next{stroke:#facc15;stroke-width:2.5;stroke-dasharray:6 3}
+.region.cursor{fill:#5b5bd6;stroke:#facc15;stroke-width:3;filter:drop-shadow(0 0 10px rgba(250,204,21,.7))}
+.number{fill:#fff;font-weight:700;text-anchor:middle;dominant-baseline:central;pointer-events:none;user-select:none;letter-spacing:1px}
+.number.found{fill:#4ade80;opacity:.7}
+.heatmap-label{fill:#fff;font-weight:600;text-anchor:middle;dominant-baseline:central;pointer-events:none;font-size:10px}
+.stats{margin-top:12px;font-size:clamp(11px,1.6vw,14px);color:#aaa;text-align:center;display:flex;flex-wrap:wrap;justify-content:center;gap:4px 16px}
+.stats b{color:#667eea}
+.message{position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;background:#2a2a4a;border:1px solid #667eea;opacity:0;transition:opacity .3s;pointer-events:none;z-index:100;font-size:14px;white-space:nowrap}
+.message.show{opacity:1}
+.info{margin-top:8px;font-size:11px;color:#666}
+.kbd-hint{margin-top:6px;font-size:11px;color:#555}
+.history-panel{margin-top:16px;width:100%;max-width:min(90vw,900px);background:#16162a;border-radius:10px;padding:14px;display:none}
+.history-panel.show{display:block}
+.history-panel h3{font-size:14px;color:#667eea;margin-bottom:10px}
+.history-table{width:100%;border-collapse:collapse;font-size:12px}
+.history-table th,.history-table td{padding:5px 8px;text-align:center;border-bottom:1px solid #2a2a4a}
+.history-table th{color:#888;font-weight:600}
+.history-table td{color:#ccc}
+.history-table tr:hover td{background:#22223a}
+.progress-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;opacity:0;transition:opacity .5s}
+.progress-ring.show{opacity:1}
+@media(max-width:500px){
+  .controls{gap:5px}
+  button{padding:6px 12px;font-size:13px}
+  .preset-btn{padding:4px 8px;font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<h1>Schulte表生成器 - 网眼大小不一的网格</h1>
+
+<div class="controls">
+  <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center">
+    <button class="preset-btn" onclick="setPreset(9)">简单 9</button>
+    <button class="preset-btn" onclick="setPreset(16)">中等 16</button>
+    <button class="preset-btn active" onclick="setPreset(25)">困难 25</button>
+    <button class="preset-btn" onclick="setPreset(36)">专家 36</button>
+    <button class="preset-btn" onclick="setPreset(49)">大师 49</button>
+  </div>
+  <label>自定义: <input type="number" id="totalInput" min="6" max="80" value="25" onchange="newGame()"></label>
+  <label>模式:
+    <select id="modeSelect" onchange="newGame()">
+      <option value="classic">顺序 (1→N)</option>
+      <option value="reverse">倒序 (N→1)</option>
+      <option value="oddEven">奇偶交替</option>
+    </select>
+  </label>
+  <button onclick="newGame()">开始训练</button>
+  <button onclick="toggleHistory()" style="background:#2a2a4a;border:1px solid #444">记录</button>
+</div>
+
+<div class="grid-wrap" id="gridWrap">
+  <svg id="grid" viewBox="0 0 600 500"></svg>
+</div>
+
+<div class="stats">
+  <span>目标: <b id="target">1</b></span>
+  <span>进度: <b id="progress">0/25</b></span>
+  <span>用时: <b id="timer">0.0s</b></span>
+  <span>得分: <b id="score">-</b></span>
+</div>
+
+<div class="kbd-hint">提示: 按 H 键显示/隐藏热力图 | 方向键导航 + Enter确认</div>
+<div class="message" id="message"></div>
+<div class="info" id="info"></div>
+
+<div class="history-panel" id="historyPanel">
+  <h3>训练记录</h3>
+  <table class="history-table">
+    <thead><tr><th>时间</th><th>模式</th><th>区域</th><th>用时</th><th>得分</th><th>速度</th><th>准确率</th><th>稳定性</th></tr></thead>
+    <tbody id="historyBody"></tbody>
+  </table>
+</div>
+
+<script>
+const STATE = {
+  total: 25, mode: 'classic', regions: [], numbers: [], found: [],
+  target: 1, startTime: null, timerId: null, running: false,
+  clicks: 0, errors: 0, intervals: [], searchTimes: [],
+  lastFoundTime: null, completed: false, showHeatmap: false,
+  cursor: -1
+};
+
+let W = 600, H = 500;
+
+function calcSize() {
+  const maxW = Math.min(window.innerWidth * 0.92, 900);
+  const maxH = window.innerHeight - 160;
+  let w = maxW, h = w * 5 / 6;
+  if (h > maxH) { h = maxH; w = h * 6 / 5; }
+  w = Math.max(300, Math.round(w));
+  h = Math.max(250, Math.round(h));
+  const wrap = document.getElementById('gridWrap');
+  wrap.style.width = w + 'px';
+  wrap.style.height = h + 'px';
+  const pad = parseFloat(getComputedStyle(wrap).paddingLeft) * 2;
+  W = Math.round(w - pad);
+  H = Math.round(h - pad);
+}
+
+function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+
+function polyArea(pts) {
+  let a = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const j = (i + 1) % pts.length;
+    a += pts[i].x * pts[j].y - pts[j].x * pts[i].y;
+  }
+  return Math.abs(a) / 2;
+}
+
+function ptSegDist(p, a, b) {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq === 0) return dist(p, a);
+  let t = ((p.x - a.x) * dx + (p.y - a.y) * dy) / lenSq;
+  t = Math.max(0, Math.min(1, t));
+  return dist(p, { x: a.x + t * dx, y: a.y + t * dy });
+}
+
+function getCenter(pts) {
+  return {
+    x: pts.reduce((s, p) => s + p.x, 0) / pts.length,
+    y: pts.reduce((s, p) => s + p.y, 0) / pts.length
+  };
+}
+
+function lineSegIntersect(p1, p2, mx, my, dx, dy) {
+  const d1 = dx * (p1.x - mx) + dy * (p1.y - my);
+  const d2 = dx * (p2.x - mx) + dy * (p2.y - my);
+  if (Math.abs(d1 - d2) < 1e-10) return { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+  const t = d1 / (d1 - d2);
+  return { x: p1.x + t * (p2.x - p1.x), y: p1.y + t * (p2.y - p1.y) };
+}
+
+function clipHalfPlane(polygon, mx, my, dx, dy) {
+  if (polygon.length < 3) return [];
+  const result = [];
+  const n = polygon.length;
+  for (let i = 0; i < n; i++) {
+    const curr = polygon[i];
+    const next = polygon[(i + 1) % n];
+    const currIn = dx * (curr.x - mx) + dy * (curr.y - my) <= 0;
+    const nextIn = dx * (next.x - mx) + dy * (next.y - my) <= 0;
+    if (currIn) {
+      result.push(curr);
+      if (!nextIn) result.push(lineSegIntersect(curr, next, mx, my, dx, dy));
+    } else if (nextIn) {
+      result.push(lineSegIntersect(curr, next, mx, my, dx, dy));
+    }
+  }
+  return result;
+}
+
+function clipToCanvas(polygon) {
+  let c = polygon;
+  c = clipHalfPlane(c, 0, 0, -1, 0);
+  c = clipHalfPlane(c, W, 0, 1, 0);
+  c = clipHalfPlane(c, 0, 0, 0, -1);
+  c = clipHalfPlane(c, 0, H, 0, 1);
+  return c;
+}
+
+function voronoiCell(points, idx) {
+  let cell = [
+    { x: -1000, y: -1000 },
+    { x: W + 1000, y: -1000 },
+    { x: W + 1000, y: H + 1000 },
+    { x: -1000, y: H + 1000 }
+  ];
+  const p = points[idx];
+  for (let j = 0; j < points.length; j++) {
+    if (j === idx) continue;
+    const q = points[j];
+    const mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2;
+    const dx = q.x - p.x, dy = q.y - p.y;
+    cell = clipHalfPlane(cell, mx, my, dx, dy);
+    if (cell.length < 3) break;
+  }
+  if (cell.length >= 3) cell = clipToCanvas(cell);
+  return cell;
+}
+
+function generatePoints(n) {
+  const pts = [];
+  const minDist = Math.min(W, H) / (Math.sqrt(n) + 1) * 0.4;
+  for (let i = 0; i < n * 30 && pts.length < n; i++) {
+    const p = { x: Math.random() * (W - 40) + 20, y: Math.random() * (H - 40) + 20 };
+    let ok = true;
+    for (const q of pts) {
+      if (dist(p, q) < minDist) { ok = false; break; }
+    }
+    if (ok) pts.push(p);
+  }
+  while (pts.length < n) {
+    pts.push({ x: Math.random() * (W - 40) + 20, y: Math.random() * (H - 40) + 20 });
+  }
+  return pts;
+}
+
+function lloydRelax(pts, iterations) {
+  let p = pts.slice();
+  for (let iter = 0; iter < iterations; iter++) {
+    const cells = p.map((_, i) => voronoiCell(p, i));
+    p = cells.map((cell, i) => {
+      if (cell.length >= 3) return getCenter(cell);
+      return pts[i];
+    });
+  }
+  return p;
+}
+
+function generate() {
+  const n = STATE.total;
+  let bestRegions = [];
+  let bestDiff = Infinity;
+
+  for (let attempt = 0; attempt < 30; attempt++) {
+    let pts = generatePoints(n);
+    pts = lloydRelax(pts, 3);
+
+    const regions = [];
+    for (let i = 0; i < n; i++) {
+      const cell = voronoiCell(pts, i);
+      if (cell.length < 3) continue;
+      const area = polyArea(cell);
+      const minArea = (W * H) / n * 0.15;
+      if (area < minArea) continue;
+      const center = getCenter(cell);
+      regions.push({
+        pts: cell,
+        cx: Math.max(20, Math.min(W - 20, center.x)),
+        cy: Math.max(20, Math.min(H - 20, center.y)),
+        area
+      });
+    }
+
+    if (regions.length === n) { bestRegions = regions; break; }
+    const diff = Math.abs(regions.length - n);
+    if (diff < bestDiff) { bestDiff = diff; bestRegions = regions; }
+  }
+
+  bestRegions.sort((a, b) => a.cy !== b.cy ? a.cy - b.cy : a.cx - b.cx);
+  return bestRegions;
+}
+
+function render() {
+  const svg = document.getElementById('grid');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  let html = '';
+
+  const maxSearchTime = Math.max(...STATE.searchTimes, 1);
+
+  for (let i = 0; i < STATE.regions.length; i++) {
+    const r = STATE.regions[i];
+    const points = r.pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+    let cls = 'region';
+    if (STATE.found[i]) cls += ' found';
+    if (i === STATE.cursor) cls += ' cursor';
+    if (STATE.showHeatmap && STATE.completed && STATE.searchTimes[i] !== undefined) {
+      const t = STATE.searchTimes[i] / maxSearchTime;
+      const h = Math.round((1 - t) * 120);
+      const fill = `hsl(${h}, 70%, 35%)`;
+      html += `<polygon class="${cls}" data-idx="${i}" points="${points}" style="fill:${fill}"/>`;
+    } else {
+      html += `<polygon class="${cls}" data-idx="${i}" points="${points}"/>`;
+    }
+  }
+
+  for (let i = 0; i < STATE.regions.length; i++) {
+    const r = STATE.regions[i];
+    let minD = Infinity;
+    for (let j = 0; j < r.pts.length; j++) {
+      minD = Math.min(minD, ptSegDist({ x: r.cx, y: r.cy }, r.pts[j], r.pts[(j + 1) % r.pts.length]));
+    }
+    r._minD = minD;
+  }
+  const globalMinD = Math.min(...STATE.regions.map(r => r._minD));
+  const fontSize = Math.min(36, Math.max(14, globalMinD * 1.4));
+  for (let i = 0; i < STATE.regions.length; i++) {
+    const r = STATE.regions[i];
+    const cls = STATE.found[i] ? 'number found' : 'number';
+    html += `<text class="${cls}" data-idx="${i}" x="${r.cx.toFixed(1)}" y="${r.cy.toFixed(1)}" font-size="${fontSize}">${STATE.numbers[i]}</text>`;
+
+    if (STATE.showHeatmap && STATE.completed && STATE.searchTimes[i] !== undefined) {
+      const time = (STATE.searchTimes[i] / 1000).toFixed(1);
+      html += `<text class="heatmap-label" x="${r.cx.toFixed(1)}" y="${(r.cy + fontSize * 0.7).toFixed(1)}" font-size="${Math.min(12, fontSize * 0.45)}">${time}s</text>`;
+    }
+  }
+
+  svg.innerHTML = html;
+  svg.onclick = (e) => {
+    const idx = e.target.dataset?.idx;
+    if (idx !== undefined) handleClick(parseInt(idx));
+  };
+  svg.ontouchstart = (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (el && el.dataset?.idx !== undefined) handleClick(parseInt(el.dataset.idx));
+  };
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function setPreset(n) {
+  STATE.total = n;
+  document.getElementById('totalInput').value = n;
+  document.querySelectorAll('.preset-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.includes(n));
+  });
+  newGame();
+}
+
+function newGame() {
+  STATE.total = parseInt(document.getElementById('totalInput').value) || 25;
+  STATE.mode = document.getElementById('modeSelect').value;
+  STATE.completed = false;
+  STATE.showHeatmap = false;
+  STATE.cursor = -1;
+  document.getElementById('score').textContent = '-';
+  document.getElementById('info').textContent = '正在生成网格...';
+  setTimeout(() => {
+    calcSize();
+    STATE.regions = generate();
+    STATE.numbers = shuffle([...Array(STATE.regions.length)].map((_, i) => i + 1));
+    STATE.found = new Array(STATE.regions.length).fill(false);
+    STATE.searchTimes = new Array(STATE.regions.length).fill(undefined);
+    STATE.target = STATE.mode === 'reverse' ? STATE.regions.length : 1;
+    STATE.running = true;
+    STATE.startTime = performance.now();
+    STATE.lastFoundTime = performance.now();
+    STATE.clicks = 0;
+    STATE.errors = 0;
+    STATE.intervals = [];
+    if (STATE.timerId) clearInterval(STATE.timerId);
+    STATE.timerId = setInterval(updateTimer, 100);
+    render();
+    updateUI();
+    document.getElementById('info').textContent = `生成完成: ${STATE.regions.length} 个凸多边形区域`;
+    showMessage('开始! 找到数字 ' + STATE.target);
+  }, 10);
+}
+
+function handleClick(idx) {
+  if (!STATE.running || STATE.found[idx]) return;
+  STATE.clicks++;
+  if (STATE.numbers[idx] === STATE.target) {
+    STATE.found[idx] = true;
+    const now = performance.now();
+    STATE.searchTimes[idx] = now - STATE.lastFoundTime;
+    STATE.lastFoundTime = now;
+    STATE.intervals.push(now);
+    STATE.target = nextTarget();
+    if (STATE.found.every(f => f)) finish();
+    render();
+    updateUI();
+  } else {
+    STATE.errors++;
+    const el = document.querySelector(`polygon[data-idx="${idx}"]`);
+    if (el) { el.classList.add('wrong'); setTimeout(() => el.classList.remove('wrong'), 400); }
+    showMessage('需要 ' + STATE.target);
+  }
+}
+
+function nextTarget() {
+  if (STATE.mode === 'reverse') return STATE.target - 1;
+  if (STATE.mode === 'oddEven') {
+    const total = STATE.regions.length;
+    const isOdd = STATE.target % 2 === 1;
+    for (let n = STATE.target + 1; n <= total; n++) {
+      if ((n % 2 === 1) !== isOdd) return n;
+    }
+    for (let n = STATE.target - 1; n >= 1; n--) {
+      if ((n % 2 === 1) !== isOdd) return n;
+    }
+    return -1;
+  }
+  return STATE.target + 1;
+}
+
+function finish() {
+  STATE.running = false;
+  STATE.completed = true;
+  clearInterval(STATE.timerId);
+  const elapsed = (performance.now() - STATE.startTime) / 1000;
+  const n = STATE.regions.length, ideal = 0.4 * n;
+  const speed = Math.max(0, Math.min(100, 100 * (1 - (elapsed - ideal) / (ideal * 3))));
+  const accuracy = STATE.clicks > 0 ? ((STATE.clicks - STATE.errors) / STATE.clicks) * 100 : 100;
+  let stability = 100;
+  if (STATE.intervals.length > 2) {
+    const ints = [];
+    for (let i = 1; i < STATE.intervals.length; i++) ints.push(STATE.intervals[i] - STATE.intervals[i - 1]);
+    const avg = ints.reduce((a, b) => a + b) / ints.length;
+    const v = ints.reduce((a, b) => a + (b - avg) ** 2, 0) / ints.length;
+    stability = Math.max(0, 100 * (1 - Math.sqrt(v) / avg * 0.5));
+  }
+  const score = Math.round(speed * 0.5 + accuracy * 0.3 + stability * 0.2);
+  document.getElementById('score').textContent = score;
+  showMessage(`完成! 用时 ${elapsed.toFixed(1)}s | 得分 ${score}`);
+  saveHistory(elapsed, score, Math.round(speed), Math.round(accuracy), Math.round(stability));
+  document.getElementById('info').textContent = '按 H 键查看热力图';
+}
+
+function updateUI() {
+  document.getElementById('target').textContent = STATE.mode === 'reverse' ? STATE.target : (STATE.found.every(f => f) ? '完成' : STATE.target);
+  document.getElementById('progress').textContent = `${STATE.found.filter(f => f).length}/${STATE.regions.length}`;
+}
+
+function updateTimer() {
+  if (!STATE.running) return;
+  document.getElementById('timer').textContent = ((performance.now() - STATE.startTime) / 1000).toFixed(1) + 's';
+}
+
+function showMessage(msg) {
+  const el = document.getElementById('message');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+function saveHistory(elapsed, score, speed, accuracy, stability) {
+  const records = JSON.parse(localStorage.getItem('schulte_history') || '[]');
+  records.unshift({
+    time: new Date().toLocaleString('zh-CN'),
+    mode: { classic: '顺序', reverse: '倒序', oddEven: '奇偶' }[STATE.mode],
+    total: STATE.regions.length,
+    elapsed: elapsed.toFixed(1) + 's',
+    score, speed, accuracy, stability
+  });
+  if (records.length > 50) records.length = 50;
+  localStorage.setItem('schulte_history', JSON.stringify(records));
+}
+
+function toggleHistory() {
+  const panel = document.getElementById('historyPanel');
+  panel.classList.toggle('show');
+  if (panel.classList.contains('show')) renderHistory();
+}
+
+function renderHistory() {
+  const records = JSON.parse(localStorage.getItem('schulte_history') || '[]');
+  const tbody = document.getElementById('historyBody');
+  if (records.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="color:#666">暂无记录</td></tr>';
+    return;
+  }
+  tbody.innerHTML = records.slice(0, 20).map(r =>
+    `<tr><td>${r.time}</td><td>${r.mode}</td><td>${r.total}</td><td>${r.elapsed}</td><td>${r.score}</td><td>${r.speed}</td><td>${r.accuracy}%</td><td>${r.stability}</td></tr>`
+  ).join('');
+}
+
+function findNeighbor(idx, dx, dy) {
+  const regions = STATE.regions;
+  if (idx < 0 || idx >= regions.length) return -1;
+  const src = regions[idx];
+  let best = -1, bestScore = Infinity;
+  for (let i = 0; i < regions.length; i++) {
+    if (i === idx || STATE.found[i]) continue;
+    const r = regions[i];
+    const ddx = r.cx - src.cx, ddy = r.cy - src.cy;
+    const dot = ddx * dx + ddy * dy;
+    if (dot <= 0) continue;
+    const perp = Math.abs(ddx * dy - ddy * dx);
+    const score = dot + perp * 2;
+    if (score < bestScore) { bestScore = score; best = i; }
+  }
+  return best;
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'h' || e.key === 'H') {
+    if (STATE.completed) {
+      STATE.showHeatmap = !STATE.showHeatmap;
+      render();
+      showMessage(STATE.showHeatmap ? '热力图: 开' : '热力图: 关');
+    }
+    return;
+  }
+  if (e.key === 'Enter' && !STATE.running) {
+    newGame();
+    return;
+  }
+  if ((e.key === 'Enter' || e.key === ' ') && STATE.running && STATE.cursor >= 0) {
+    e.preventDefault();
+    handleClick(STATE.cursor);
+    return;
+  }
+  if (!STATE.running) return;
+  const dirs = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
+  const d = dirs[e.key];
+  if (!d) return;
+  e.preventDefault();
+  if (STATE.cursor < 0) {
+    STATE.cursor = 0;
+  } else {
+    const next = findNeighbor(STATE.cursor, d[0], d[1]);
+    if (next >= 0) STATE.cursor = next;
+  }
+  render();
+});
+
+window.addEventListener('resize', () => {
+  if (STATE.regions.length > 0) {
+    calcSize();
+    render();
+  }
+});
+
+setPreset(25);
+</script>
+</body>
+</html>
